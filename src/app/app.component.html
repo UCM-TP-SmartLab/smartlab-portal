@@ -1,0 +1,84 @@
+<a class="skip-link" href="#main">Preskočiť na obsah</a>
+
+<div class="topline">
+  <span>Miesto, kde nápady dostávajú priestor.</span>
+  <div>
+    <a routerLink="/prihlasenie">Prihlásenie študenta ↗</a
+    ><a routerLink="/administracia/prihlasenie">Administrácia</a>
+  </div>
+</div>
+<header class="site-header">
+  <a routerLink="/domov" aria-label="SmartLab – domov" (click)="closeMenu()"
+    ><img
+      class="brand-logo"
+      src="assets/brand/smartlab-logo-horizontalne.svg"
+      alt="SmartLab UCM & Trnava"
+      width="190"
+      height="66"
+  /></a>
+  <button
+    mat-stroked-button
+    class="menu-toggle"
+    type="button"
+    aria-controls="primary-navigation"
+    [attr.aria-expanded]="menuOpen"
+    (click)="menuOpen = !menuOpen"
+  >
+    {{ menuOpen ? "Zavrieť menu" : "Menu ☰" }}
+  </button>
+  <nav
+    id="primary-navigation"
+    aria-label="Hlavná navigácia"
+    [class.is-open]="menuOpen"
+    (keydown.escape)="closeMenu()"
+  >
+    <a
+      *ngFor="let item of navigation"
+      [routerLink]="item.path"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      (click)="closeMenu()"
+      >{{ item.label }}</a
+    >
+  </nav>
+  <a
+    mat-flat-button
+    class="header-cta"
+    routerLink="/priestory-a-vybavenie"
+    (click)="closeMenu()"
+    >Priestory a vybavenie ↗</a
+  >
+</header>
+<main id="main" tabindex="-1"><router-outlet></router-outlet></main>
+<footer class="site-footer">
+  <div>
+    <img
+      src="assets/brand/smartlab-logo-horizontalne-tmave-pozadie.svg"
+      width="200"
+      height="70"
+      alt="SmartLab UCM & Trnava"
+    />
+    <p>Spájame vzdelávanie, inovácie<br />a nové možnosti spolupráce.</p>
+  </div>
+  <div>
+    <h2>Objavte SmartLab</h2>
+    <a routerLink="/o-smartlabe">O SmartLabe</a
+    ><a routerLink="/projekty">Projekty</a
+    ><a routerLink="/podujatia">Podujatia</a>
+  </div>
+  <div>
+    <h2>Váš priestor</h2>
+    <a routerLink="/priestory-a-vybavenie">Priestory a vybavenie</a
+    ><a routerLink="/obsadenost">Obsadenosť</a
+    ><a routerLink="/rezervacie">Moje rezervácie</a>
+  </div>
+  <div>
+    <h2>Nájdete nás</h2>
+    <p>Hlavná 5<br />Trnava</p>
+    <a routerLink="/kontakt">Ako sa k nám dostať ↗</a>
+  </div>
+  <div class="footer-bottom">
+    <span>SmartLab UCM & Trnava</span
+    ><span>Inovácie začínajú spoluprácou.</span>
+  </div>
+</footer>
