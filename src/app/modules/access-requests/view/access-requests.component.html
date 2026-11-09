@@ -1,0 +1,81 @@
+<section class="page-heading">
+  <div class="wrap">
+    <p class="eyebrow">OTVORTE SI NOVÉ MOŽNOSTI</p>
+    <h1>Žiadosti o prístup</h1>
+    <p class="lead">
+      Ukážka podania a spracovania žiadosti o prístup do laboratória.
+    </p>
+  </div>
+</section>
+<section
+  class="wrap section"
+  *ngIf="{
+    items: access$ | async,
+    busy: busy$ | async,
+    error: error$ | async,
+    loadError: loadError$ | async,
+    notice: notice$ | async,
+    createdId: createdId$ | async,
+  } as vm"
+>
+  <div class="form-layout">
+    <form [formGroup]="formGroup" class="form-card" (ngSubmit)="submit()">
+      <h2>Nová demo žiadosť</h2>
+      <mat-form-field
+        ><mat-label>Účel prístupu</mat-label
+        ><textarea
+          matInput
+          rows="5"
+          formControlName="purpose"
+          maxlength="1000"
+        ></textarea
+        ><mat-error
+          >Zadajte účel, najviac 1 000 znakov.</mat-error
+        ></mat-form-field
+      >
+      <p class="muted">
+        Formulár je predbežný. Rozsah a význam prístupu určí potvrdený
+        backendový kontrakt.
+      </p>
+      <button
+        mat-flat-button
+        type="submit"
+        [disabled]="vm.busy || !!vm.createdId"
+      >
+        Vytvoriť demo žiadosť
+      </button>
+    </form>
+    <aside>
+      <h2>Vaše žiadosti</h2>
+      <sl-state
+        *ngIf="!vm.items?.length"
+        title="Zatiaľ žiadne žiadosti"
+        message="Vaše demo žiadosti sa zobrazia tu."
+      ></sl-state
+      ><mat-card
+        appearance="outlined"
+        *ngFor="let item of vm.items"
+        class="list-card"
+        ><mat-card-content
+          ><span class="badge" [attr.data-status]="item.status">{{
+            labels[item.status]
+          }}</span>
+          <h3>{{ item.purpose }}</h3>
+          <p *ngIf="item.reason">Dôvod: {{ item.reason }}</p>
+          <ul>
+            <li *ngFor="let change of item.history">
+              {{ change.at | instant }} · {{ labels[change.status] }}
+            </li>
+          </ul></mat-card-content
+        ></mat-card
+      >
+    </aside>
+  </div>
+  <sl-state
+    *ngIf="vm.error || vm.loadError"
+    title="Žiadosť sa nepodarilo spracovať"
+    [message]="vm.error || vm.loadError || ''"
+    [error]="true"
+  ></sl-state>
+  <p class="notice" role="status" *ngIf="vm.notice">{{ vm.notice }}</p>
+</section>

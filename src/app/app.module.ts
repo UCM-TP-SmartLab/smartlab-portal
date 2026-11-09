@@ -7,6 +7,7 @@ import { AppComponent } from "./app.component";
 import { AppRoutingModule } from "./app-routing.module";
 import { CoreModule } from "./core/core.module";
 import { SharedModule } from "./shared/shared.module";
+import { sessionReducer } from "./store/session/session.store";
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -14,7 +15,7 @@ import { SharedModule } from "./shared/shared.module";
     NoopAnimationsModule,
     CoreModule,
     SharedModule,
-    StoreModule.forRoot({}),
+    StoreModule.forRoot({ session: sessionReducer }),
     EffectsModule.forRoot([]),
     AppRoutingModule,
   ],

@@ -1,0 +1,176 @@
+<ng-container
+  *ngIf="{
+    resources: resources$ | async,
+    loading: loading$ | async,
+    error: error$ | async,
+    detail: detail$ | async,
+    isDetail: isDetail$ | async,
+    availabilityTrigger: detailAvailability$ | async,
+    intervals: intervals$ | async,
+    availabilityError: availabilityError$ | async,
+    availabilityKnown: availabilityKnown$ | async,
+  } as vm"
+  ><section class="page-heading">
+    <div class="wrap">
+      <p class="eyebrow">PRIESTOR PRE VÁŠ NÁPAD</p>
+      <h1>
+        {{
+          vm.isDetail
+            ? vm.detail?.name || "Zdroj sa nenašiel"
+            : "Priestory a vybavenie"
+        }}
+      </h1>
+      <p class="lead">Nájdite miesto a nástroje pre váš ďalší projekt.</p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <mat-progress-spinner
+      *ngIf="vm.loading"
+      mode="indeterminate"
+      diameter="32"
+      aria-label="Načítavanie zdrojov"
+    ></mat-progress-spinner
+    ><sl-state
+      *ngIf="vm.error"
+      title="Zdroje nie sú dostupné"
+      [message]="vm.error"
+      [error]="true"
+      ><button mat-button (click)="reload()">Skúsiť znova</button></sl-state
+    ><ng-container *ngIf="!vm.loading && !vm.error"
+      ><ng-container *ngIf="vm.isDetail; else list"
+        ><a class="back-link" routerLink="/priestory-a-vybavenie"
+          >← Všetky priestory a vybavenie</a
+        >
+        <article *ngIf="vm.detail as resource; else missing">
+          <div class="split-feature">
+            <div
+              class="resource-placeholder"
+              role="img"
+              aria-label="Fotografia zatiaľ nie je dostupná"
+            >
+              <span aria-hidden="true">{{
+                resource.type === "room" ? "⌂" : "⚙"
+              }}</span>
+              <p>Fotografia zatiaľ nie je dostupná</p>
+            </div>
+            <div>
+              <span *ngIf="config.demo" class="badge">DEMO</span>
+              <h2>{{ resource.name }}</h2>
+              <p>{{ resource.description }}</p>
+              <p *ngIf="resource.capacity">
+                Kapacita: {{ resource.capacity }} osôb
+              </p>
+              <p *ngIf="resource.quantity">
+                Počet kusov: {{ resource.quantity }}
+              </p>
+              <ul>
+                <li *ngFor="let item of resource.equipment">{{ item }}</li>
+              </ul>
+              <div class="actions">
+                <a
+                  mat-flat-button
+                  routerLink="/rezervacie/nova"
+                  [queryParams]="{ resource: resource.id }"
+                  >Rezervovať</a
+                ><a
+                  mat-stroked-button
+                  routerLink="/obsadenost"
+                  [queryParams]="{ resource: resource.id }"
+                  >Pozrieť obsadenosť</a
+                >
+              </div>
+            </div>
+          </div>
+          <section class="calendar-block" aria-label="Obsadenosť zdroja dnes">
+            <h2>Obsadenosť · {{ today }}</h2>
+            <p class="muted">
+              Europe/Bratislava ·
+              {{
+                config.demo ? "Iba lokálne demo intervaly" : "Verejný prehľad"
+              }}
+            </p>
+            <sl-state
+              *ngIf="vm.availabilityError"
+              title="Obsadenosť nie je dostupná"
+              [message]="vm.availabilityError"
+            ></sl-state>
+            <div *ngFor="let interval of vm.intervals" class="interval">
+              <span class="badge" [attr.data-status]="interval.status">{{
+                labels[interval.status]
+              }}</span
+              ><span
+                >{{ interval.start | instant }} –
+                {{ interval.end | instant }}</span
+              >
+            </div>
+            <p
+              *ngIf="vm.availabilityKnown && !vm.intervals?.length"
+              class="notice"
+            >
+              V lokálnej relácii dnes nie sú žiadne demo rezervácie. Skutočná
+              dostupnosť nie je potvrdená.
+            </p>
+            <a
+              class="text-link"
+              routerLink="/obsadenost"
+              [queryParams]="{ resource: resource.id }"
+              >Vybrať iný deň →</a
+            >
+          </section>
+        </article>
+        <ng-template #missing
+          ><sl-state
+            title="Zdroj sa nenašiel"
+            message="Tento zdroj nie je v publikovanom katalógu."
+          ></sl-state></ng-template></ng-container
+      ><ng-template #list
+        ><div class="filters">
+          <button mat-stroked-button (click)="filter$.next('')">Všetky</button
+          ><button mat-stroked-button (click)="filter$.next('room')">
+            Miestnosti</button
+          ><button mat-stroked-button (click)="filter$.next('equipment')">
+            Vybavenie
+          </button>
+        </div>
+        <div class="card-grid">
+          <mat-card *ngFor="let resource of vm.resources" appearance="outlined"
+            ><div class="resource-placeholder" aria-hidden="true">
+              {{ resource.type === "room" ? "⌂" : "⚙" }}
+            </div>
+            <mat-card-content
+              ><p class="eyebrow">
+                {{ resource.type === "room" ? "MIESTNOSŤ" : "VYBAVENIE" }}
+                <span *ngIf="config.demo">· DEMO</span>
+              </p>
+              <h2>{{ resource.name }}</h2>
+              <p>{{ resource.description }}</p>
+              <p class="muted">
+                {{
+                  resource.capacity
+                    ? "Kapacita: " + resource.capacity
+                    : "Kapacita: údaj nie je dostupný"
+                }}
+              </p>
+              <p class="muted">Dostupnosť sa overuje v kalendári.</p>
+              <div class="actions">
+                <a
+                  mat-stroked-button
+                  [routerLink]="['/priestory-a-vybavenie', resource.id]"
+                  >Detail</a
+                ><a
+                  mat-flat-button
+                  routerLink="/rezervacie/nova"
+                  [queryParams]="{ resource: resource.id }"
+                  >Rezervovať</a
+                >
+              </div></mat-card-content
+            ></mat-card
+          >
+        </div>
+        <sl-state
+          *ngIf="!vm.resources?.length"
+          title="Katalóg pripravujeme"
+          message="Schválené informácie o miestnostiach a vybavení zatiaľ neboli dodané."
+        ></sl-state></ng-template
+    ></ng-container></section
+></ng-container>

@@ -1,2 +1,13 @@
 /domov
+/o-smartlabe
+/kontakt
+/aktuality
+/projekty
+/podujatia
+/partneri
+/prilezitosti-pre-studentov
+/priestory-a-vybavenie
+/obsadenost
+/prihlasenie
+/administracia/prihlasenie
 /404
