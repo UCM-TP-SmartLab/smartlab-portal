@@ -1,0 +1,8 @@
+<div class="state-panel" [class.error-panel]="error" role="status">
+  <span class="state-mark" aria-hidden="true">{{ error ? "!" : "○" }}</span>
+  <div>
+    <h2>{{ title }}</h2>
+    <p>{{ message }}</p>
+    <ng-content></ng-content>
+  </div>
+</div>

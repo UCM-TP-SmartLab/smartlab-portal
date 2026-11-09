@@ -1,0 +1,153 @@
+<section class="hero">
+  <div class="wrap hero-layout">
+    <div class="hero-copy">
+      <p class="eyebrow">
+        <span class="live-dot"></span> SMARTLAB UCM & TRNAVA
+      </p>
+      <h1>Veľké nápady.<br /><span>Spoločný priestor.</span></h1>
+      <p class="lead">
+        Miesto, kde sa stretávajú ľudia, technológie a nové možnosti. Pridajte
+        sa k nám a premeňte svoj nápad na niečo skutočné.
+      </p>
+      <div class="actions">
+        <a mat-flat-button routerLink="/ziadosti-o-pristup"
+          >Požiadať o prístup ↗</a
+        ><a mat-stroked-button routerLink="/rezervacie/nova"
+          >Rezervovať miestnosť</a
+        >
+      </div>
+      <a class="text-link" routerLink="/obsadenost"
+        >Pozrieť obsadenosť <span aria-hidden="true">→</span></a
+      >
+      <p class="hero-location">
+        TRNAVA · HLAVNÁ 5 <span>Priestor pre vašu ďalšiu myšlienku.</span>
+      </p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="art-ring ring-one"></div>
+      <div class="art-ring ring-two"></div>
+      <div class="art-cross cross-one">+</div>
+      <div class="art-cross cross-two">+</div>
+      <img
+        src="assets/brand/smartlab-znacka.svg"
+        alt=""
+        width="330"
+        height="330"
+      />
+      <div class="art-label label-one">NÁPAD ↗</div>
+      <div class="art-label label-two">PREPOJENIE +</div>
+      <div class="art-caption">TVORME BUDÚCNOSŤ. SPOLU.</div>
+    </div>
+  </div>
+</section>
+<div class="mission-strip">
+  <div class="wrap">
+    <span>UNIVERZITA × MESTO × VY</span>
+    <p>Otvorený priestor. Nové perspektívy. Spoločné riešenia.</p>
+    <a routerLink="/o-smartlabe" aria-label="Viac o SmartLabe">↗</a>
+  </div>
+</div>
+<section class="wrap section">
+  <div class="section-top">
+    <div>
+      <p class="eyebrow">NA ČOM STAVIAME</p>
+      <h2>Štyri piliere. Nekonečno možností.</h2>
+    </div>
+    <p class="muted narrow">
+      Dobré nápady rastú tam, kde majú priestor a správnych ľudí.
+    </p>
+  </div>
+  <div class="pillars">
+    <article *ngFor="let pillar of pillars">
+      <span class="pillar-number">{{ pillar.number }} /</span>
+      <h3>{{ pillar.title }}</h3>
+      <p>{{ pillar.text }}</p>
+    </article>
+  </div>
+</section>
+<section class="soft-section">
+  <div class="wrap section">
+    <div class="section-top">
+      <div>
+        <p class="eyebrow">OD MYŠLIENKY K PRAXI</p>
+        <h2>Priestor pre vaše projekty.</h2>
+      </div>
+      <a mat-stroked-button routerLink="/projekty">Objaviť projekty ↗</a>
+    </div>
+    <div class="split-feature">
+      <div class="feature-illustration" aria-hidden="true">
+        <span>IDEA</span><span class="diagram-line"></span><span>PROTOTYP</span
+        ><span class="diagram-line"></span><span>RIEŠENIE ↗</span>
+      </div>
+      <div>
+        <h3>Máte otázku. Spolu nájdeme cestu.</h3>
+        <p>
+          SmartLab prepája vzdelávanie a inovácie. Objavte projekty,
+          príležitosti na spoluprácu a priestor pre vlastné nápady.
+        </p>
+        <a class="text-link" routerLink="/prilezitosti-pre-studentov"
+          >Príležitosti pre študentov →</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+<section
+  class="wrap section"
+  *ngIf="{
+    events: upcoming$ | async,
+    loading: loading$ | async,
+    error: error$ | async,
+  } as vm"
+>
+  <div class="section-top">
+    <div>
+      <p class="eyebrow">BUĎTE PRI TOM</p>
+      <h2>Najbližšie podujatia</h2>
+    </div>
+    <a class="text-link" routerLink="/podujatia">Všetky podujatia ↗</a>
+  </div>
+  <mat-progress-spinner
+    *ngIf="vm.loading"
+    mode="indeterminate"
+    diameter="32"
+    aria-label="Načítavanie podujatí"
+  ></mat-progress-spinner
+  ><sl-state
+    *ngIf="vm.error"
+    title="Podujatia nie sú dostupné"
+    [message]="vm.error"
+    [error]="true"
+  ></sl-state
+  ><sl-state
+    *ngIf="!vm.loading && !vm.error && !vm.events?.length"
+    title="Nové stretnutia ešte len prídu"
+    message="Momentálne nemáme zverejnené žiadne nadchádzajúce podujatia."
+  ></sl-state>
+  <div class="card-grid">
+    <mat-card *ngFor="let event of vm.events" appearance="outlined"
+      ><mat-card-content
+        ><span *ngIf="config.demo" class="badge">DEMO</span>
+        <p class="eyebrow">{{ event.date | instant }}</p>
+        <h3>{{ event.title }}</h3>
+        <p>{{ event.summary }}</p>
+        <a class="text-link" [routerLink]="['/podujatia', event.slug]"
+          >Detail podujatia ↗</a
+        ></mat-card-content
+      ></mat-card
+    >
+  </div>
+</section>
+<section class="wrap section">
+  <div class="join-panel">
+    <div>
+      <p class="eyebrow">VAŠE NÁPADY SI ZASLÚŽIA PRIESTOR</p>
+      <h2>Začnite práve tu.</h2>
+      <p>Objavte priestory a vybavenie pre váš ďalší projekt.</p>
+      <a mat-flat-button routerLink="/priestory-a-vybavenie"
+        >Priestory a vybavenie ↗</a
+      >
+    </div>
+    <span class="join-symbol" aria-hidden="true">↗</span>
+  </div>
+</section>

@@ -6,3 +6,9 @@
 Thumbs.db
 .idea/
 .vscode/
+/dist/
+/.angular/
+/out-tsc/
+/test-results/
+/playwright-report/
+/.superpowers/
