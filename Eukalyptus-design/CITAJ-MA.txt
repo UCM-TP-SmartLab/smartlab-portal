@@ -1,0 +1,41 @@
+SmartLab logo, primárny návrh "Veža v kruhu" (design system SmartLab Eukalyptus)
+
+SVG (vektor, na web a tlač, ľubovoľná veľkosť)
+  svg/smartlab-logo-horizontalne*.svg        logo s nápisom vedľa značky (hlavička webu, dokumenty)
+  svg/smartlab-logo-vertikalne*.svg          logo s nápisom pod značkou (titulná strana, plagát)
+    každé vo verziách: farebné, -tmave-pozadie, -cierne, -biele
+    text je prevedený na krivky, písmo Manrope netreba mať nainštalované
+  svg/smartlab-znacka.svg                    farebná značka na svetlé pozadie
+  svg/smartlab-znacka-tmave-pozadie.svg      farebná značka na tmavé pozadie
+  svg/smartlab-znacka-cierna.svg             jednofarebná (#191816)
+  svg/smartlab-znacka-biela.svg              jednofarebná biela
+  svg/smartlab-ikona-aplikacie.svg           ikona na grafitovom podklade
+  svg/smartlab-ikona-aplikacie-eukalyptus.svg  ikona na eukalyptovom podklade
+  svg/smartlab-favicon.svg                   zjednodušená značka pre karty prehliadača
+
+PNG (priesvitné pozadie)
+  logo horizontálne: 2400, 1200, 600 px na šírku
+  logo vertikálne: 1200, 600, 300 px na šírku
+  značky: 1024, 512, 256, 128 px na šírku
+  ikony aplikácie: 1024, 512, 192 (Android/PWA), 180 (Apple touch icon)
+  favicon: 16, 32, 48, 180 px
+favicon.ico obsahuje 16, 32 a 48 px.
+
+Do <head> webu:
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/smartlab-favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/smartlab-ikona-aplikacie-180px.png">
+
+Farby
+  grafit #3d3935 (veža), eukalyptus #72c593 (kruh, ľavý uzol), eukalyptus tmavý #3e6b4a
+  (spoje, pravý uzol), žltá UCM #ebd34b (uzol na konci kruhu),
+  na tmavom: veža #f4f2ef, spoje #8fd4aa.
+
+Pravidlá
+  Pod 48 px používajte favicon (zjednodušenú verziu), detailné spoje by sa zliali.
+  Okolo značky nechajte voľný priestor aspoň šírku jedného piliera veže (z kruhu nič nevyčnieva).
+  Značku nedeformujte, neotáčajte a nemeňte jej farby mimo variantov vyššie.
+
+Písmo
+  Manrope ExtraBold (SMARTLAB) a SemiBold (UCM & TRNAVA), licencia SIL Open Font License.
+  Horizontálne logo používajte od šírky cca 160 px, menšie miesto: samotná značka.
