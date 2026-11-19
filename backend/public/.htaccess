@@ -1,0 +1,9 @@
+# Zapnutie prepisovania URL adries.
+RewriteEngine On
+
+# Existujúce súbory a priečinky necháme spracovať Apache.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Ostatné požiadavky presmerujeme interne do index.php.
+RewriteRule ^ index.php [L]
