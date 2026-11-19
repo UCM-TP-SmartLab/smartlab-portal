@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "start": "ng serve --configuration development",
+    "start:demo": "ng serve --configuration demo --port 4201",
     "build": "ng build --configuration production && node scripts/finalize-static.mjs",
+    "build:demo": "ng build --configuration demo",
     "test": "vitest run",
     "lint": "eslint src tests scripts && tsc --noEmit -p tsconfig.app.json",
     "check:static": "node scripts/check-static-output.mjs",
+    "test:e2e": "playwright test",
     "preview": "node scripts/serve-static.mjs"
   },
   "dependencies": {

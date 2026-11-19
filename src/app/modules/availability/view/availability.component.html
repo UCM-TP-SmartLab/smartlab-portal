@@ -1,0 +1,105 @@
+<ng-container
+  *ngIf="{
+    resources: resources$ | async,
+    intervals: intervals$ | async,
+    known: known$ | async,
+    loading: loading$ | async,
+    error: error$ | async,
+    route: routeChanges$ | async,
+  } as vm"
+  ><section class="page-heading">
+    <div class="wrap">
+      <p class="eyebrow">NAPLÁNUJTE SI TVORENIE</p>
+      <h1>Obsadenosť</h1>
+      <p class="lead">
+        Kalendár miestností a vybavenia. Všetky časy sú v pásme
+        Europe/Bratislava.
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="filters">
+      <mat-form-field
+        ><mat-label>Zdroj</mat-label
+        ><mat-select
+          [value]="resourceId"
+          (selectionChange)="changeResource($event.value)"
+          ><mat-option *ngFor="let r of vm.resources" [value]="r.id">{{
+            r.name
+          }}</mat-option></mat-select
+        ></mat-form-field
+      ><mat-form-field
+        ><mat-label>Dátum</mat-label
+        ><input
+          matInput
+          type="date"
+          [value]="date"
+          #day
+          (change)="changeDate(day.value)" /></mat-form-field
+      ><button
+        mat-stroked-button
+        (click)="navigateDate(-1)"
+        aria-label="Predchádzajúci deň"
+      >
+        ←</button
+      ><button
+        mat-stroked-button
+        (click)="navigateDate(1)"
+        aria-label="Nasledujúci deň"
+      >
+        →
+      </button>
+    </div>
+    <div class="legend">
+      <span><i class="legend-dot pending"></i> Čaká na schválenie</span
+      ><span><i class="legend-dot approved"></i> Schválená / obsadené</span
+      ><span
+        ><i class="legend-dot unknown"></i> Bez údajov / neznáma
+        dostupnosť</span
+      >
+    </div>
+    <mat-progress-spinner
+      *ngIf="vm.loading"
+      mode="indeterminate"
+      diameter="32"
+      aria-label="Načítavanie obsadenosti"
+    ></mat-progress-spinner
+    ><sl-state
+      *ngIf="vm.error"
+      title="Obsadenosť nie je dostupná"
+      [message]="vm.error"
+    ></sl-state
+    ><sl-state
+      *ngIf="!vm.error && !resourceId"
+      title="Vyberte zdroj"
+      message="Na zobrazenie intervalov vyberte miestnosť alebo vybavenie."
+    ></sl-state
+    ><ng-container *ngIf="vm.known && resourceId && !vm.loading"
+      ><p class="notice" *ngIf="config.demo">
+        Lokálna demo obsadenosť. Nepotvrdzuje skutočnú dostupnosť ani nebráni
+        reálnym kolíziám.
+      </p>
+      <div class="interval" *ngFor="let slot of vm.intervals">
+        <span class="badge" [attr.data-status]="slot.status">{{
+          labels[slot.status]
+        }}</span
+        ><span>{{ slot.start | instant }} – {{ slot.end | instant }}</span>
+      </div>
+      <sl-state
+        *ngIf="!vm.intervals?.length"
+        title="Žiadne demo rezervácie v tomto dni"
+        message="V aktuálnej lokálnej relácii nie sú pre tento zdroj blokované intervaly."
+      ></sl-state
+      ><a
+        mat-flat-button
+        routerLink="/rezervacie/nova"
+        [queryParams]="{ resource: resourceId, date: date }"
+        >Vybrať čas rezervácie ↗</a
+      ></ng-container
+    >
+    <p class="muted">
+      ICS odber zatiaľ nie je dostupný. Verejné podujatia nájdete v
+      <a routerLink="/podujatia">kalendári podujatí</a>.
+    </p>
+  </section></ng-container
+>

@@ -1,0 +1,195 @@
+<ng-container
+  *ngIf="{
+    entries: view.entries$ | async,
+    loading: view.loading$ | async,
+    error: view.error$ | async,
+    detail: view.detail$ | async,
+    isDetail: view.isDetail$ | async,
+  } as vm"
+>
+  <section class="page-heading">
+    <div class="wrap">
+      <p class="eyebrow">{{ view.page.eyebrow }}</p>
+      <h1>
+        {{
+          vm.isDetail
+            ? vm.detail?.title || "Záznam sa nenašiel"
+            : view.page.title
+        }}
+      </h1>
+      <p class="lead">
+        {{ vm.isDetail ? vm.detail?.summary : view.page.description }}
+      </p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <a *ngIf="vm.isDetail" class="back-link" [routerLink]="view.page.path"
+      >← {{ view.page.title }}</a
+    >
+    <mat-progress-spinner
+      *ngIf="vm.loading"
+      mode="indeterminate"
+      diameter="36"
+      aria-label="Načítavanie"
+    ></mat-progress-spinner>
+    <sl-state
+      *ngIf="vm.error"
+      title="Údaje sa nepodarilo načítať"
+      [message]="vm.error"
+      [error]="true"
+      ><button mat-stroked-button (click)="view.reload()">
+        Skúsiť znova
+      </button></sl-state
+    >
+    <ng-container *ngIf="!vm.loading && !vm.error">
+      <ng-container *ngIf="vm.isDetail; else listing"
+        ><article *ngIf="vm.detail as entry; else missing" class="article">
+          <span *ngIf="view.config.demo" class="badge">Ukážkový obsah</span>
+          <p *ngIf="entry.date">{{ entry.date | instant }}</p>
+          <p *ngIf="entry.author">Autor: {{ entry.author }}</p>
+          <p>{{ entry.body }}</p>
+          <a
+            *ngIf="entry.safeUrl && (!view.isEvents || entry.registrationOpen)"
+            mat-stroked-button
+            [href]="entry.safeUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{
+              view.isEvents ? "Registrácia na podujatie ↗" : "Externý odkaz ↗"
+            }}</a
+          >
+          <p *ngIf="view.isEvents && !entry.registrationOpen" class="muted">
+            Podujatie sa už skončilo. Registrácia nie je dostupná.
+          </p>
+        </article>
+        <ng-template #missing
+          ><sl-state
+            title="Záznam sa nenašiel"
+            message="Skontrolujte adresu alebo sa vráťte na zoznam."
+          ></sl-state></ng-template
+      ></ng-container>
+      <ng-template #listing
+        ><div class="filters">
+          <mat-form-field *ngIf="(view.categories$ | async)?.length"
+            ><mat-label>Kategória</mat-label
+            ><mat-select
+              (selectionChange)="view.filter('category', $event.value)"
+              ><mat-option value="">Všetky</mat-option
+              ><mat-option
+                *ngFor="let category of view.categories$ | async"
+                [value]="category"
+                >{{ category }}</mat-option
+              ></mat-select
+            ></mat-form-field
+          >
+          <ng-container *ngIf="view.isEvents"
+            ><mat-form-field
+              ><mat-label>Dátum podujatia</mat-label
+              ><input
+                matInput
+                type="date"
+                #date
+                (change)="view.filter('date', date.value)" /></mat-form-field
+            ><mat-form-field *ngIf="(view.forms$ | async)?.length"
+              ><mat-label>Forma</mat-label
+              ><mat-select (selectionChange)="view.filter('form', $event.value)"
+                ><mat-option value="">Všetky</mat-option
+                ><mat-option
+                  *ngFor="let value of view.forms$ | async"
+                  [value]="value"
+                  >{{ value }}</mat-option
+                ></mat-select
+              ></mat-form-field
+            ><mat-form-field *ngIf="(view.audiences$ | async)?.length"
+              ><mat-label>Cieľová skupina</mat-label
+              ><mat-select
+                (selectionChange)="view.filter('audience', $event.value)"
+                ><mat-option value="">Všetky</mat-option
+                ><mat-option
+                  *ngFor="let value of view.audiences$ | async"
+                  [value]="value"
+                  >{{ value }}</mat-option
+                ></mat-select
+              ></mat-form-field
+            ><mat-form-field *ngIf="(view.partners$ | async)?.length"
+              ><mat-label>Partner</mat-label
+              ><mat-select
+                (selectionChange)="view.filter('partner', $event.value)"
+                ><mat-option value="">Všetci</mat-option
+                ><mat-option
+                  *ngFor="let value of view.partners$ | async"
+                  [value]="value"
+                  >{{ value }}</mat-option
+                ></mat-select
+              ></mat-form-field
+            ></ng-container
+          >
+        </div>
+        <div class="card-grid">
+          <mat-card *ngFor="let entry of vm.entries" appearance="outlined"
+            ><mat-card-content
+              ><span class="badge" *ngIf="view.config.demo">DEMO</span>
+              <p class="eyebrow" *ngIf="entry.category">{{ entry.category }}</p>
+              <h2>
+                <a [routerLink]="[view.page.path, entry.slug]">{{
+                  entry.title
+                }}</a>
+              </h2>
+              <p>{{ entry.summary }}</p>
+              <p *ngIf="entry.date" class="muted">{{ entry.date | instant }}</p>
+              <a class="text-link" [routerLink]="[view.page.path, entry.slug]"
+                >Zistiť viac ↗</a
+              ></mat-card-content
+            ></mat-card
+          >
+        </div>
+        <sl-state
+          *ngIf="!vm.entries?.length"
+          title="Zatiaľ žiadne záznamy"
+          message="Pre tento výber zatiaľ nemáme zverejnený obsah. Skúste sa sem vrátiť neskôr."
+        ></sl-state>
+        <div
+          class="calendar-block"
+          *ngIf="view.isEvents && (view.calendar$ | async)"
+        >
+          <div class="section-top">
+            <h2>Kalendár podujatí · {{ view.monthLabel }}</h2>
+            <div>
+              <button
+                mat-stroked-button
+                aria-label="Predchádzajúci mesiac"
+                (click)="view.changeMonth(-1)"
+              >
+                ←</button
+              ><button
+                mat-stroked-button
+                aria-label="Nasledujúci mesiac"
+                (click)="view.changeMonth(1)"
+              >
+                →
+              </button>
+            </div>
+          </div>
+          <p class="muted">
+            Verejné podujatia. Obsadenosť miestností nájdete v samostatnom
+            prehľade.
+          </p>
+          <div class="calendar-grid" role="list" aria-label="Dni mesiaca">
+            <div
+              *ngFor="let day of view.days"
+              class="calendar-day"
+              role="listitem"
+            >
+              <span>{{ day.label }}</span
+              ><a
+                *ngFor="let event of day.events"
+                [routerLink]="[view.page.path, event.slug]"
+                >{{ event.title }}</a
+              >
+            </div>
+          </div>
+        </div>
+      </ng-template></ng-container
+    >
+  </section></ng-container
+>

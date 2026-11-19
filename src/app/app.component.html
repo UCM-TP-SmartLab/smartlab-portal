@@ -1,5 +1,8 @@
 <a class="skip-link" href="#main">Preskočiť na obsah</a>
-
+<div class="demo-banner" *ngIf="config.demo">
+  LOKÁLNE DEMO · Syntetické údaje, nič sa neodosiela. Obnovenie stránky vymaže
+  reláciu. <span *ngIf="role$ | async as role">Rola: {{ roles[role] }}</span>
+</div>
 <div class="topline">
   <span>Miesto, kde nápady dostávajú priestor.</span>
   <div>
