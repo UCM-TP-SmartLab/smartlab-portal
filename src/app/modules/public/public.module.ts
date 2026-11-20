@@ -4,11 +4,15 @@ import { EffectsModule } from "@ngrx/effects";
 import { SharedModule } from "../../shared/shared.module";
 import { PublicRoutingModule } from "./public-routing.module";
 import { HomeComponent } from "./view/home.component";
+import { AboutComponent } from "./view/about.component";
+import { ContactComponent } from "./view/contact.component";
 import { NotFoundComponent } from "./view/not-found.component";
 import { homeFeature } from "./store/home.store";
 @NgModule({
   declarations: [
     HomeComponent,
+    AboutComponent,
+    ContactComponent,
     NotFoundComponent,
   ],
   imports: [

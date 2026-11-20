@@ -1,0 +1,136 @@
+<ng-container
+  *ngIf="{
+    bookings: bookings$ | async,
+    resources: resources$ | async,
+    loading: loading$ | async,
+    busy: busy$ | async,
+    error: error$ | async,
+    loadError: loadError$ | async,
+    notice: notice$ | async,
+    id: detailId$ | async,
+    detail: detail$ | async,
+    cancel: cancel$ | async,
+  } as vm"
+  ><section class="page-heading">
+    <div class="wrap">
+      <p class="eyebrow">VÁŠ SMARTLAB</p>
+      <h1>{{ vm.id ? "Detail rezervácie" : "Moje rezervácie" }}</h1>
+      <p class="lead">Vaše termíny a ich aktuálny stav v lokálnom deme.</p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <div class="actions">
+      <a mat-flat-button routerLink="/rezervacie/nova">Nová rezervácia ↗</a
+      ><a mat-stroked-button routerLink="/ziadosti-o-pristup"
+        >Žiadosti o prístup</a
+      >
+    </div>
+    <sl-state
+      *ngIf="vm.error || vm.loadError"
+      title="Operáciu sa nepodarilo dokončiť"
+      [message]="vm.error || vm.loadError || ''"
+      [error]="true"
+    ></sl-state>
+    <p *ngIf="vm.notice" role="status" class="notice">{{ vm.notice }}</p>
+    <mat-progress-spinner
+      *ngIf="vm.loading"
+      mode="indeterminate"
+      diameter="32"
+      aria-label="Načítavanie rezervácií"
+    ></mat-progress-spinner
+    ><ng-container *ngIf="!vm.id; else detail"
+      ><div class="filters">
+        <mat-form-field
+          ><mat-label>Stav</mat-label
+          ><mat-select (selectionChange)="setFilter('status', $event.value)"
+            ><mat-option value="">Všetky</mat-option
+            ><mat-option *ngFor="let status of statuses" [value]="status[0]">{{
+              status[1]
+            }}</mat-option></mat-select
+          ></mat-form-field
+        ><mat-form-field
+          ><mat-label>Zdroj</mat-label
+          ><mat-select (selectionChange)="setFilter('resource', $event.value)"
+            ><mat-option value="">Všetky</mat-option
+            ><mat-option *ngFor="let r of vm.resources" [value]="r.id">{{
+              r.name
+            }}</mat-option></mat-select
+          ></mat-form-field
+        ><mat-form-field
+          ><mat-label>Dátum</mat-label
+          ><input
+            matInput
+            type="date"
+            #date
+            (change)="setFilter('date', date.value)"
+        /></mat-form-field>
+      </div>
+      <mat-card
+        *ngFor="let item of vm.bookings"
+        appearance="outlined"
+        class="list-card"
+        ><mat-card-content
+          ><div class="section-top">
+            <div>
+              <span class="badge" [attr.data-status]="item.status">{{
+                labels[item.status]
+              }}</span>
+              <h2>
+                <a [routerLink]="['/rezervacie', item.id]">{{
+                  item.purpose
+                }}</a>
+              </h2>
+              <p>{{ item.startUtc | instant }} – {{ item.endUtc | instant }}</p>
+              <p class="muted">
+                {{ item.resourceId }} · {{ item.quantity }} ks
+              </p>
+            </div>
+            <button
+              mat-stroked-button
+              *ngIf="item.cancellable"
+              [disabled]="vm.busy"
+              (click)="cancel(item.id)"
+            >
+              Zrušiť rezerváciu
+            </button>
+          </div>
+          <p *ngIf="item.reason">Dôvod: {{ item.reason }}</p></mat-card-content
+        ></mat-card
+      ><sl-state
+        *ngIf="!vm.loading && !vm.bookings?.length"
+        title="Zatiaľ žiadne rezervácie"
+        message="Vytvorte demo rezerváciu alebo zmeňte filtre."
+      ></sl-state></ng-container
+    ><ng-template #detail
+      ><a class="back-link" routerLink="/rezervacie">← Moje rezervácie</a>
+      <article *ngIf="vm.detail as item; else missing">
+        <h2>{{ item.purpose }}</h2>
+        <span class="badge" [attr.data-status]="item.status">{{
+          labels[item.status]
+        }}</span>
+        <p>{{ item.startUtc | instant }} – {{ item.endUtc | instant }}</p>
+        <p>Zdroj: {{ item.resourceId }} · Počet: {{ item.quantity }}</p>
+        <p *ngIf="item.reason">Dôvod: {{ item.reason }}</p>
+        <h3>História stavov</h3>
+        <ul>
+          <li *ngFor="let change of item.history">
+            {{ change.at | instant }} · {{ labels[change.status] }}
+            {{ change.reason }}
+          </li>
+        </ul>
+        <button
+          mat-stroked-button
+          *ngIf="item.cancellable"
+          [disabled]="vm.busy"
+          (click)="cancel(item.id)"
+        >
+          Zrušiť rezerváciu
+        </button>
+      </article>
+      <ng-template #missing
+        ><sl-state
+          title="Rezervácia sa nenašla"
+          message="Nie je súčasťou vašej aktuálnej demo relácie."
+        ></sl-state></ng-template
+    ></ng-template></section
+></ng-container>

@@ -1,0 +1,195 @@
+<ng-container
+  *ngIf="{
+    queue: queue$ | async,
+    selected: selected$ | async,
+    detail: detailMode$ | async,
+    page: page$ | async,
+    pageTitle: pageTitle$ | async,
+    role: role$ | async,
+    resources: resources$ | async,
+    busy: busy$ | async,
+    loading: loading$ | async,
+    error: error$ | async,
+    loadError: loadError$ | async,
+    notice: notice$ | async,
+    decision: decision$ | async,
+  } as vm"
+  ><section class="page-heading">
+    <div class="wrap">
+      <p class="eyebrow">SPRÁVA SMARTLABU · DEMO</p>
+      <h1>{{ vm.pageTitle }}</h1>
+      <p class="lead">Rozhodnutia a prehľad v aktuálnej lokálnej relácii.</p>
+    </div>
+  </section>
+  <section class="wrap section">
+    <nav class="actions" aria-label="Správcovská navigácia">
+      <a mat-stroked-button routerLink="/administracia">Žiadosti</a
+      ><a
+        *ngIf="vm.role === admin"
+        mat-stroked-button
+        routerLink="/administracia/zdroje"
+        >Zdroje</a
+      ><a
+        *ngIf="vm.role === admin"
+        mat-stroked-button
+        routerLink="/administracia/roly"
+        >Roly</a
+      >
+    </nav>
+    <sl-state
+      *ngIf="vm.error || vm.loadError"
+      title="Operáciu sa nepodarilo dokončiť"
+      [message]="vm.error || vm.loadError || ''"
+      [error]="true"
+    ></sl-state>
+    <p *ngIf="vm.notice" class="notice" role="status">{{ vm.notice }}</p>
+    <mat-progress-spinner
+      *ngIf="vm.loading"
+      mode="indeterminate"
+      diameter="32"
+      aria-label="Načítavanie fronty"
+    ></mat-progress-spinner
+    ><ng-container *ngIf="vm.page === 'queue'"
+      ><ng-container *ngIf="!vm.detail; else detail"
+        ><div class="filters">
+          <mat-form-field
+            ><mat-label>Stav</mat-label
+            ><mat-select
+              [value]="pending"
+              (selectionChange)="setFilter('status', $event.value)"
+              ><mat-option value="">Všetky</mat-option
+              ><mat-option *ngFor="let s of statuses" [value]="s[0]">{{
+                s[1]
+              }}</mat-option></mat-select
+            ></mat-form-field
+          ><mat-form-field
+            ><mat-label>Zdroj</mat-label
+            ><mat-select (selectionChange)="setFilter('resource', $event.value)"
+              ><mat-option value="">Všetky</mat-option
+              ><mat-option *ngFor="let r of vm.resources" [value]="r.id">{{
+                r.name
+              }}</mat-option></mat-select
+            ></mat-form-field
+          ><mat-form-field
+            ><mat-label>Dátum rezervácie</mat-label
+            ><input
+              matInput
+              type="date"
+              #date
+              (change)="setFilter('date', date.value)"
+          /></mat-form-field>
+        </div>
+        <mat-card
+          *ngFor="let request of vm.queue"
+          appearance="outlined"
+          class="list-card"
+          ><mat-card-content
+            ><p class="eyebrow">
+              {{ request.kind === "reservation" ? "REZERVÁCIA" : "PRÍSTUP" }}
+            </p>
+            <h2>
+              <a
+                [routerLink]="[
+                  '/administracia/ziadost',
+                  request.kind,
+                  request.item.id,
+                ]"
+                >{{ request.item.purpose }}</a
+              >
+            </h2>
+            <span class="badge" [attr.data-status]="request.item.status">{{
+              labels[request.item.status]
+            }}</span></mat-card-content
+          ></mat-card
+        ><sl-state
+          *ngIf="!vm.loading && !vm.queue?.length"
+          title="Žiadne žiadosti vo výbere"
+          message="Zmeňte filtre alebo najskôr vytvorte žiadosť v študentskom deme."
+        ></sl-state></ng-container
+      ><ng-template #detail
+        ><a class="back-link" routerLink="/administracia">← Fronta žiadostí</a>
+        <article *ngIf="vm.selected as request; else missing">
+          <h2>{{ request.item.purpose }}</h2>
+          <span class="badge" [attr.data-status]="request.item.status">{{
+            labels[request.item.status]
+          }}</span>
+          <p>Demo žiadateľ: {{ request.item.ownerId }}</p>
+          <ng-container *ngIf="request.kind === 'reservation'"
+            ><p>
+              {{ request.item.startUtc | instant }} –
+              {{ request.item.endUtc | instant }}
+            </p>
+            <p>
+              Zdroj: {{ request.item.resourceId }} · Počet:
+              {{ request.item.quantity }}
+            </p>
+            <p class="notice">
+              Dostupnosť a kolízie v tejto verzii posudzuje iba lokálny demo
+              provider.
+            </p></ng-container
+          >
+          <p *ngIf="request.item.reason">Dôvod: {{ request.item.reason }}</p>
+          <form
+            *ngIf="request.item.status === pending"
+            [formGroup]="formGroup"
+            (ngSubmit)="decide(request)"
+            class="form-card"
+          >
+            <mat-form-field
+              ><mat-label>Rozhodnutie</mat-label
+              ><mat-select formControlName="status"
+                ><mat-option [value]="approved">Schváliť</mat-option
+                ><mat-option [value]="rejected"
+                  >Zamietnuť</mat-option
+                ></mat-select
+              ></mat-form-field
+            ><mat-form-field
+              ><mat-label>Dôvod (povinný pri zamietnutí)</mat-label
+              ><textarea
+                matInput
+                formControlName="reason"
+                rows="3"
+                [errorStateMatcher]="matcher"
+                maxlength="1000"
+              ></textarea
+              ><mat-error
+                >Pri zamietnutí uveďte dôvod, najviac 1 000 znakov.</mat-error
+              ></mat-form-field
+            ><button mat-flat-button [disabled]="vm.busy" type="submit">
+              Potvrdiť rozhodnutie
+            </button>
+          </form>
+        </article>
+        <ng-template #missing
+          ><sl-state
+            title="Žiadosť sa nenašla"
+            message="Nie je súčasťou aktuálnej relácie."
+          ></sl-state></ng-template></ng-template></ng-container
+    ><ng-container *ngIf="vm.page === 'resources'"
+      ><p class="notice">
+        Demo prehľad. Úpravy a mazanie zdrojov vyžadujú potvrdené API.
+      </p>
+      <mat-card
+        *ngFor="let r of vm.resources"
+        appearance="outlined"
+        class="list-card"
+        ><mat-card-content
+          ><h2>{{ r.name }}</h2>
+          <p>{{ r.description }}</p>
+          <p>
+            {{ r.type }} · {{ r.capacity || r.quantity }}
+            {{ r.capacity ? "osôb" : "ks" }}
+          </p></mat-card-content
+        ></mat-card
+      ></ng-container
+    ><ng-container *ngIf="vm.page === 'roles'"
+      ><p class="notice">
+        Pracovné UI roly. Priraďovanie rolí nie je dostupné bez schváleného API.
+      </p>
+      <div *ngFor="let user of demoRoles" class="interval">
+        <strong>{{ user.name }}</strong
+        ><span>{{ roleLabels[user.role] }}</span>
+      </div></ng-container
+    >
+  </section></ng-container
+>

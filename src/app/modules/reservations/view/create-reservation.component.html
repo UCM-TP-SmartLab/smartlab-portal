@@ -1,0 +1,127 @@
+<section class="page-heading">
+  <div class="wrap">
+    <p class="eyebrow">VÁŠ PRIESTOR NA TVORENIE</p>
+    <h1>Nová rezervácia</h1>
+    <p class="lead">
+      Vyberte zdroj a čas. Rezervácia v tomto režime je iba lokálna ukážka.
+    </p>
+  </div>
+</section>
+<section
+  class="wrap section"
+  *ngIf="{
+    resources: resources$ | async,
+    busy: busy$ | async,
+    error: error$ | async,
+    notice: notice$ | async,
+    createdId: createdId$ | async,
+    changes: changes$ | async,
+  } as vm"
+>
+  <a class="back-link" routerLink="/rezervacie">← Moje rezervácie</a>
+  <div class="form-layout">
+    <form [formGroup]="formGroup" (ngSubmit)="review()" class="form-card">
+      <mat-form-field
+        ><mat-label>Miestnosť alebo vybavenie</mat-label
+        ><mat-select formControlName="resourceId"
+          ><mat-option *ngFor="let r of vm.resources" [value]="r.id">{{
+            r.name
+          }}</mat-option></mat-select
+        ><mat-error>Vyberte zdroj.</mat-error></mat-form-field
+      ><mat-form-field
+        ><mat-label>Dátum</mat-label
+        ><input matInput type="date" formControlName="date" /><mat-error
+          >Zadajte dátum.</mat-error
+        ></mat-form-field
+      >
+      <div class="two-fields">
+        <mat-form-field
+          ><mat-label>Začiatok</mat-label
+          ><input matInput type="time" formControlName="start" /><mat-error
+            >Zadajte čas začiatku.</mat-error
+          ></mat-form-field
+        ><mat-form-field
+          ><mat-label>Koniec</mat-label
+          ><input
+            matInput
+            type="time"
+            formControlName="end"
+            [errorStateMatcher]="matcher"
+          /><mat-error>{{
+            vm.changes?.intervalError || "Zadajte čas konca."
+          }}</mat-error></mat-form-field
+        >
+      </div>
+      <mat-form-field
+        ><mat-label>Počet kusov (miestnosť = 1)</mat-label
+        ><input
+          matInput
+          type="number"
+          min="1"
+          step="1"
+          formControlName="quantity"
+        /><mat-error>Zadajte kladný celý počet.</mat-error></mat-form-field
+      ><mat-form-field
+        ><mat-label>Účel rezervácie</mat-label
+        ><textarea
+          matInput
+          formControlName="purpose"
+          rows="4"
+          maxlength="1000"
+        ></textarea
+        ><mat-hint>Demo pole; skutočný rozsah určí backend.</mat-hint
+        ><mat-error
+          >Zadajte účel, najviac 1 000 znakov.</mat-error
+        ></mat-form-field
+      ><button
+        mat-flat-button
+        type="submit"
+        [disabled]="vm.busy || !!vm.createdId"
+      >
+        Skontrolovať rezerváciu
+      </button>
+    </form>
+    <aside>
+      <p class="eyebrow">DOBRÉ VEDIEŤ</p>
+      <h2>Všetko na jednom mieste.</h2>
+      <p>
+        Časy zadávajte v pásme Europe/Bratislava. Skutočné pravidlá rezervácie a
+        dostupnosť určuje backend.
+      </p>
+      <a
+        class="text-link"
+        routerLink="/obsadenost"
+        [queryParams]="{ resource: vm.changes?.value?.resourceId }"
+        >Pozrieť demo obsadenosť →</a
+      >
+      <div *ngIf="summary as draft" class="summary-card">
+        <h2>Zhrnutie požiadavky</h2>
+        <p>{{ draft.date }} · {{ draft.start }} – {{ draft.end }}</p>
+        <p>Zdroj: {{ draft.resourceId }} · Počet: {{ draft.quantity }}</p>
+        <p>{{ draft.purpose }}</p>
+        <button
+          mat-flat-button
+          type="button"
+          (click)="submit()"
+          [disabled]="vm.busy || !!vm.createdId"
+        >
+          {{ vm.busy ? "Spracúva sa…" : "Vytvoriť demo rezerváciu" }}
+        </button>
+      </div>
+    </aside>
+  </div>
+  <sl-state
+    *ngIf="vm.error"
+    title="Rezerváciu sa nepodarilo vytvoriť"
+    [message]="vm.error"
+    [error]="true"
+  ></sl-state
+  ><sl-state
+    *ngIf="vm.notice"
+    title="Hotovo v lokálnom deme"
+    [message]="vm.notice"
+    ><a mat-stroked-button routerLink="/rezervacie"
+      >Moje rezervácie →</a
+    ></sl-state
+  >
+</section>

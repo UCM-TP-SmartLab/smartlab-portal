@@ -16,13 +16,9 @@
             "outputPath": "dist/smartlab",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "assets": [
               {
                 "glob": "**/*",
@@ -55,6 +51,17 @@
             "development": {
               "optimization": false,
               "sourceMap": true
+            },
+            "demo": {
+              "outputPath": "dist/demo",
+              "optimization": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/app/config/provider.config.ts",
+                  "with": "src/app/config/provider.config.demo.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -64,6 +71,9 @@
           "configurations": {
             "development": {
               "buildTarget": "smartlab:build:development"
+            },
+            "demo": {
+              "buildTarget": "smartlab:build:demo"
             }
           },
           "defaultConfiguration": "development"

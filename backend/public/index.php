@@ -67,13 +67,13 @@ $router->add('GET', '/api/spaces/{id}', function(string $id): void {
     ]);
 });
 
-//Informácia o aktuálne prihlásenej osobe.
+// Informácia o aktuálne prihlásenej osobe.
 $router->add('GET', '/api/auth/me', function(): void {
     $controller = new AuthController();
     $controller->me();
 });
 
-//Odhlásenie aktuuálne prihláseného používateľa.
+// Odhlásenie aktuálne prihláseného používateľa.
 $router->add('POST', '/api/auth/logout', function(): void {
     $controller = new AuthController();
     $controller->logout();
