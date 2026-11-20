@@ -4,9 +4,11 @@ declare(strict_types=1);
 // Načítanie triedy Router.
 require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Core/Response.php';
+require_once __DIR__ . '/../app/Controllers/SpaceController.php';
 
 use App\Core\Router;
 use App\Core\Response;
+use App\Controllers\SpaceController;
 
 // Povolená adresa frontendovej aplikácie.
 $allowedOrigin = 'http://localhost:4200';
@@ -44,23 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Vytvorenie inštancie routera.
 $router = new Router();
 
-// Registrácia testovacej API trasy.
-
+// Zoznam všetkých priestorov.
 $router->add('GET', '/api/spaces', function(): void {
-    Response::json([
-        'data' => [
-            'message' => 'Zoznam priestorov SmartLab'
-        ]
-    ]);
+    $controller = new SpaceController();
+    $controller->index();
 });
 
+// Detail konkrétneho priestoru.
 $router->add('GET', '/api/spaces/{id}', function(string $id): void {
-    Response::json([
-        'data' => [
-            'id' => $id,
-            'message' => 'Detail priestoru SmartLab'
-        ]
-    ]);
+    $controller = new SpaceController();
+    $controller->show($id);
 });
 
 // Spracovanie prichádzajúcej HTTP požiadavky.
