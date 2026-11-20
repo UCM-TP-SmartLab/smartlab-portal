@@ -1,12 +1,16 @@
 <?php
 declare(strict_types=1);
 
-// Načítanie triedy Router.
+// Načítanie potrebných tried.
 require_once __DIR__ . '/../app/Core/Router.php';
 require_once __DIR__ . '/../app/Core/Response.php';
+require_once __DIR__ . '/../app/Core/Session.php';
+require_once __DIR__ . '/../app/Core/Auth.php';
+require_once __DIR__ . '/../app/Controllers/AuthController.php';
 
 use App\Core\Router;
 use App\Core\Response;
+use App\Controllers\AuthController;
 
 // Povolená adresa frontendovej aplikácie.
 $allowedOrigin = 'http://localhost:4200';
@@ -61,6 +65,18 @@ $router->add('GET', '/api/spaces/{id}', function(string $id): void {
             'message' => 'Detail priestoru SmartLab'
         ]
     ]);
+});
+
+//Informácia o aktuálne prihlásenej osobe.
+$router->add('GET', '/api/auth/me', function(): void {
+    $controller = new AuthController();
+    $controller->me();
+});
+
+//Odhlásenie aktuuálne prihláseného používateľa.
+$router->add('POST', '/api/auth/logout', function(): void {
+    $controller = new AuthController();
+    $controller->logout();
 });
 
 // Spracovanie prichádzajúcej HTTP požiadavky.
