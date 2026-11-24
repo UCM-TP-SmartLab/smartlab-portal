@@ -70,7 +70,8 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "development": {
-              "buildTarget": "smartlab:build:development"
+              "buildTarget": "smartlab:build:development",
+              "proxyConfig": "proxy.conf.json"
             },
             "demo": {
               "buildTarget": "smartlab:build:demo"

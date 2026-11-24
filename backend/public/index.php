@@ -47,6 +47,7 @@ $router = new Router();
 // Registrácia testovacej API trasy.
 
 $router->add('GET', '/api/spaces', function(): void {
+    // TODO: Nahradiť testovaciu správu reálnym zoznamom priestorov z databázy a dohodnúť dátový kontrakt.
     Response::json([
         'data' => [
             'message' => 'Zoznam priestorov SmartLab'
@@ -55,6 +56,7 @@ $router->add('GET', '/api/spaces', function(): void {
 });
 
 $router->add('GET', '/api/spaces/{id}', function(string $id): void {
+    // TODO: Validovať ID a vrátiť reálny priestor alebo 404; samotné ID s message nie je detail.
     Response::json([
         'data' => [
             'id' => $id,
@@ -62,6 +64,10 @@ $router->add('GET', '/api/spaces/{id}', function(string $id): void {
         ]
     ]);
 });
+
+// Kostry chýbajúcich operácií s explicitným HTTP 501.
+$registerTodoRoutes = require __DIR__ . '/../app/routes-todo.php';
+$registerTodoRoutes($router);
 
 // Spracovanie prichádzajúcej HTTP požiadavky.
 $router->dispatch(

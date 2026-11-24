@@ -13,6 +13,7 @@ import { PORTAL_CONFIG } from "../../../config/portal.config";
 import { SeoService } from "../../../core/seo/seo.service";
 import {
   loadResources,
+  loadResourceDetail,
   selectResources,
   selectResourcesError,
   selectResourcesLoading,
@@ -45,6 +46,13 @@ export class ResourcesComponent {
     ),
   );
   readonly isDetail$ = this.route.paramMap.pipe(map((p) => p.has("id")));
+  readonly routeLoad$ = this.route.paramMap.pipe(
+    map((params) => params.get("id")),
+    distinctUntilChanged(),
+    tap((id) =>
+      this.store.dispatch(id ? loadResourceDetail({ id }) : loadResources()),
+    ),
+  );
   readonly detail$ = combineLatest([
     this.store.select(selectResources),
     this.route.paramMap,
@@ -77,10 +85,8 @@ export class ResourcesComponent {
       this.store.dispatch(loadAvailability({ resourceId, date: this.today })),
     ),
   );
-  constructor() {
-    this.store.dispatch(loadResources());
-  }
   reload(): void {
-    this.store.dispatch(loadResources());
+    const id = this.route.snapshot.paramMap.get("id");
+    this.store.dispatch(id ? loadResourceDetail({ id }) : loadResources());
   }
 }

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start:backend": "php -S 127.0.0.1:8000 -t backend/public backend/public/index.php",
     "start": "ng serve --configuration development",
     "start:demo": "ng serve --configuration demo --port 4201",
     "build": "ng build --configuration production && node scripts/finalize-static.mjs",

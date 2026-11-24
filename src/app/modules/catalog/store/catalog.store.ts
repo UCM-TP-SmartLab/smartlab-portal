@@ -24,6 +24,14 @@ export const resourcesFailed = createAction(
   "[Katalóg] Zdroje chyba",
   props<{ error: string }>(),
 );
+export const loadResourceDetail = createAction(
+  "[Katalóg] Načítať detail",
+  props<{ id: string }>(),
+);
+export const resourceDetailLoaded = createAction(
+  "[Katalóg] Detail načítaný",
+  props<{ resource: FrontendResource }>(),
+);
 export const loadAvailability = createAction(
   "[Katalóg] Obsadenosť",
   props<{ resourceId: string; date: string }>(),
@@ -57,6 +65,17 @@ const initial: CatalogState = {
 export const catalogReducer = createReducer(
   initial,
   on(loadResources, (s) => ({ ...s, loading: true, error: null })),
+  on(loadResourceDetail, (s) => ({
+    ...s,
+    resources: [],
+    loading: true,
+    error: null,
+  })),
+  on(resourceDetailLoaded, (s, { resource }) => ({
+    ...s,
+    resources: [resource],
+    loading: false,
+  })),
   on(resourcesLoaded, (s, { resources }) => ({
     ...s,
     resources,
@@ -106,6 +125,19 @@ export class CatalogEffects {
   private readonly actions$ = inject(Actions);
   private readonly provider = inject(PORTAL_PROVIDER);
   private readonly errors = inject(PortalErrorService);
+  readonly detail$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadResourceDetail),
+      switchMap(({ id }) =>
+        this.provider.resource(id).pipe(
+          map((resource) => resourceDetailLoaded({ resource })),
+          catchError((error) =>
+            of(resourcesFailed({ error: this.errors.message(error) })),
+          ),
+        ),
+      ),
+    ),
+  );
   readonly resources$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadResources),

@@ -1,9 +1,10 @@
 # SmartLab UCM & Trnava
 
-Staticky generovaný Angular portál s dizajnom Eukalyptus. Produkčný web
-nepotrebuje aplikačný server: doručuje iba HTML, JavaScript, CSS, fonty a obrázky.
-Za behu nevolá API ani externé služby. Verejné stránky obsahujú HTML aj bez
-JavaScriptu; filtre, navigácia aplikácie a demo formuláre používajú JavaScript.
+Staticky generovaný Angular portál s dizajnom Eukalyptus a PHP backendom.
+Verejné stránky obsahujú HTML aj bez JavaScriptu. Katalóg v prehliadači volá
+`/api/spaces` a `/api/spaces/{id}`; pri prerenderovaní sa API nevolá.
+Backend zatiaľ vracia testovacie správy, ktoré UI označuje ako nedokončené.
+Stav všetkých endpointov a kostier s `// TODO`: [backend/README.md](backend/README.md).
 
 ## Spustenie
 
@@ -15,6 +16,11 @@ npm start
 ```
 
 Verejný statický režim počas vývoja: `http://localhost:4200`.
+
+Pre napojenie API spustite v druhom termináli `npm run start:backend`
+(PHP musí byť v PATH). Vývojové proxy je v `proxy.conf.json`.
+Na produkcii treba popri statických súboroch nasadiť aj PHP backend a smerovať
+`/api` do `backend/public/index.php`; statický preview PHP neposkytuje.
 
 ```sh
 npm run start:demo
@@ -81,13 +87,11 @@ správcovská fronta a rozhodnutie; administrátorské prehľady zdrojov a rolí
 
 Produkčné rezervácie, živá dostupnosť, autentifikácia, správa zdrojov/rolí,
 ICS a notifikácie sú **nedostupné**, kým neexistujú schválené integrácie a
-nie je zmenená požiadavka na nulové API požiadavky. Demo sa nesmie nasadiť
+nie sú dokončené PHP operácie označené `// TODO`. Demo sa nesmie nasadiť
 ako skutočný rezervačný systém. Server musí pri budúcej integrácii vynucovať
 oprávnenia, kolízie a business pravidlá; frontendové guardy ich nenahrádzajú.
 
-Otvorené zmluvy sú v [backend-contract-todo.md](docs/backend-contract-todo.md),
-postup v [implementation-plan.md](docs/implementation-plan.md) a výsledky
-v [verification.md](docs/verification.md).
+Otvorené operácie a aktuálny postup integrácie sú v [backend/README.md](backend/README.md).
 
 ## Overenie
 
@@ -103,6 +107,8 @@ npm run test:e2e
 E2E automaticky spustí lokálny statický náhľad a samostatný demo dev server.
 Testy overujú rezerváciu, konflikt so zachovaním formulára, rozhodnutie,
 guardy, verejné HTML bez JS, mobilné menu, šírky 375/800/1440 px a nulové
-runtime fetch/XHR alebo externé assety v produkcii. Všetky časy sa zobrazujú
+volania existujúcich API trás a absenciu externých assetov v produkcii. API
+odpovede sú v prehliadačových testoch simulované podľa aktuálneho PHP kódu.
+Všetky časy sa zobrazujú
 v Europe/Bratislava. Neexistujúca a dvojznačná hodina pri zmene času je
 odmietnutá s vysvetlením namiesto tichej konverzie.

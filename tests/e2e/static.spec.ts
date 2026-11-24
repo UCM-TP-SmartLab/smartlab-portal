@@ -14,18 +14,29 @@ test("verejný obsah má HTML bez JavaScriptu", async ({ browser }) => {
   }
   await context.close();
 });
-test("produkcia nemá runtime API ani externé assety a nedá sa prepnúť na demo", async ({
+test("produkcia volá iba existujúce API a nedá sa prepnúť na demo", async ({
   page,
 }) => {
   const forbidden: string[] = [];
   const errors: string[] = [];
+  const apiCalls: string[] = [];
+  await page.route("**/api/spaces", (route) =>
+    route.fulfill({
+      json: { data: { message: "Zoznam priestorov SmartLab" } },
+    }),
+  );
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("request", (r) => {
     if (
-      ["fetch", "xhr"].includes(r.resourceType()) ||
+      (["fetch", "xhr"].includes(r.resourceType()) &&
+        new URL(r.url()).pathname !== "/api/spaces") ||
       new URL(r.url()).origin !== origin
     )
       forbidden.push(r.url());
+  });
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/api/spaces")
+      apiCalls.push(request.url());
   });
   await page.addInitScript(() => {
     localStorage.setItem("role", "admin");
@@ -53,7 +64,26 @@ test("produkcia nemá runtime API ani externé assety a nedá sa prepnúť na de
     page.getByRole("button", { name: /Pokračovať ako/ }),
   ).toHaveCount(0);
   expect(forbidden).toEqual([]);
+  expect(apiCalls.length).toBeGreaterThan(0);
   expect(errors).toEqual([]);
+});
+test("detail priestoru volá PHP trasu a nezobrazuje testovaciu správu ako dáta", async ({
+  page,
+}) => {
+  let called = false;
+  await page.route("**/api/spaces/1", (route) => {
+    called = true;
+    return route.fulfill({
+      json: { data: { id: "1", message: "Detail priestoru SmartLab" } },
+    });
+  });
+  await page.goto(`${origin}/priestory-a-vybavenie/1`);
+  await expect(
+    page.getByText("Backend zatiaľ vracia iba testovaciu odpoveď.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  expect(called).toBe(true);
 });
 test("neznámy detail zobrazuje pravdivý stav", async ({ page }) => {
   await page.goto(`${origin}/projekty/neexistuje`);
