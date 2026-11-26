@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main, feature/ci]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (lint, testy, build, HTML/CSS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Nu Html Checker (W3C validátor) potrebuje Javu.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Inštalácia závislostí
+        run: npm ci
+
+      - name: Lint a kontrola typov
+        run: npm run lint
+
+      - name: Unit testy
+        run: npm test
+
+      - name: Produkčný build
+        run: npm run build
+
+      - name: Kontrola statického výstupu
+        run: npm run check:static
+
+      - name: Validácia HTML a CSS (W3C Nu Html Checker)
+        run: npm run validate:html
+
+      - name: Uloženie zbuildovaného webu
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: dist/smartlab/browser
+          retention-days: 7
+
+  e2e:
+    name: Frontend E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Inštalácia závislostí
+        run: npm ci
+
+      - name: Inštalácia prehliadača
+        run: npx playwright install --with-deps chromium
+
+      - name: Produkčný build
+        run: npm run build
+
+      - name: E2E testy
+        run: npm run test:e2e
+
+      - name: Report pri chybe
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  backend:
+    name: Backend (PHP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Rovnaká verzia ako v XAMPP.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Kontrola syntaxe PHP
+        run: |
+          find backend -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Testy backendu
+        run: |
+          shopt -s nullglob
+          tests=(backend/tests/*Test.php)
+          if [ ${#tests[@]} -eq 0 ]; then
+            echo "::notice::V backend/tests zatiaľ nie sú žiadne testy."
+            exit 0
+          fi
+          for test in "${tests[@]}"; do
+            echo "== $test"
+            php "$test"
+          done
+
+      - name: Spustenie API a kontrola trás
+        run: |
+          php -S 127.0.0.1:8000 -t backend/public backend/public/index.php > php-server.log 2>&1 &
+          for i in $(seq 1 20); do
+            curl -s -o /dev/null http://127.0.0.1:8000/api/spaces && break
+            sleep 0.5
+          done
+
+          check() {
+            local method=$1 path=$2 expected=$3
+            local status
+            status=$(curl -s -o response.json -w '%{http_code}' -X "$method" "http://127.0.0.1:8000$path")
+            echo "$method $path -> $status (očakávané $expected)"
+            if [ "$status" != "$expected" ]; then
+              cat response.json
+              return 1
+            fi
+            if ! php -r 'json_decode(file_get_contents("response.json"), flags: JSON_THROW_ON_ERROR);'; then
+              echo "Odpoveď nie je platný JSON:"
+              cat response.json
+              return 1
+            fi
+          }
+
+          check GET /api/spaces 200
+          check GET /api/spaces/1 200
+          check GET /api/neexistuje 404
+          check DELETE /api/spaces 405
+
+      - name: Log PHP servera
+        if: always()
+        run: cat php-server.log || true
+
+  database:
+    name: Databáza (import schémy)
+    runs-on: ubuntu-latest
+    services:
+      # Rovnaká verzia ako v XAMPP.
+      mariadb:
+        image: mariadb:10.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import database/schema.sql
+        run: |
+          if [ ! -f database/schema.sql ]; then
+            echo "::notice::Súbor database/schema.sql zatiaľ neexistuje, kontrola sa preskočila."
+            exit 0
+          fi
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE smartlab CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          mysql -h 127.0.0.1 -u root -proot smartlab < database/schema.sql
+          echo "Vytvorené tabuľky:"
+          mysql -h 127.0.0.1 -u root -proot smartlab -e "SHOW TABLES"

@@ -10,6 +10,7 @@
     "test": "vitest run",
     "lint": "eslint src tests scripts && tsc --noEmit -p tsconfig.app.json",
     "check:static": "node scripts/check-static-output.mjs",
+    "validate:html": "npx --yes --package=vnu-jar@26.11.20 vnu --skip-non-html --also-check-css dist/smartlab/browser",
     "test:e2e": "playwright test",
     "preview": "node scripts/serve-static.mjs"
   },

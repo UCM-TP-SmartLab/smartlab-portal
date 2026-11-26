@@ -42,6 +42,8 @@ gh pr create --base dev --fill
 
 Bez `gh`: na GitHube kliknite na „Compare & pull request“ a skontrolujte, že base je `dev`. Vpravo v Reviewers vyberte niekoho z tímu.
 
+Na každom PR sa automaticky spustí CI (záložka Checks, popis v `.github/workflows/ci.yml`): lint a testy frontendu, produkčný build, W3C validácia vygenerovaného HTML a CSS, E2E testy, kontrola syntaxe a trás PHP backendu a import `database/schema.sql`. Kým niečo z toho svieti načerveno, PR neschvaľujte. Kliknutím na chybu uvidíte, čo presne zlyhalo. Väčšinu kontrol si viete spustiť aj lokálne, príkazy sú v README v časti Overenie.
+
 **4. Opravy po review**
 
 Keď treba niečo upraviť, spravte ďalší commit a `git push` na tú istú vetvu. Pridá sa to do toho istého PR. Po každom pushi musí reviewer PR schváliť znova.
