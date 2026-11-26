@@ -94,11 +94,18 @@ test("mobilné menu má názov, stav a dá sa ovládať klávesnicou", async ({
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto(`${origin}/domov`);
   const toggle = page.getByRole("button", { name: "Menu ☰" });
-  await toggle.focus();
-  await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("button", { name: "Zavrieť menu" }),
-  ).toHaveAttribute("aria-expanded", "true");
+  const close = page.getByRole("button", { name: "Zavrieť menu" });
+  // Prerenderované tlačidlo je na stránke skôr, než ho Angular oživí.
+  // Stlačenie pred spustením aplikácie sa stratí, preto ho opakujeme.
+  await expect(async () => {
+    if (!(await close.isVisible())) {
+      await toggle.focus();
+      await page.keyboard.press("Enter");
+    }
+    await expect(close).toHaveAttribute("aria-expanded", "true", {
+      timeout: 1000,
+    });
+  }).toPass({ timeout: 15000 });
   await page
     .getByRole("navigation", { name: "Hlavná navigácia" })
     .getByRole("link", { name: "Kontakt", exact: true })
