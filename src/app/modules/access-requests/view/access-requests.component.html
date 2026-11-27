@@ -3,7 +3,7 @@
     <p class="eyebrow">OTVORTE SI NOVÉ MOŽNOSTI</p>
     <h1>Žiadosti o prístup</h1>
     <p class="lead">
-      Ukážka podania a spracovania žiadosti o prístup do laboratória.
+      Podajte žiadosť o prístup do laboratória a sledujte jej stav.
     </p>
   </div>
 </section>
@@ -20,7 +20,7 @@
 >
   <div class="form-layout">
     <form [formGroup]="formGroup" class="form-card" (ngSubmit)="submit()">
-      <h2>Nová demo žiadosť</h2>
+      <h2>Nová žiadosť</h2>
       <mat-form-field
         ><mat-label>Účel prístupu</mat-label
         ><textarea
@@ -33,16 +33,12 @@
           >Zadajte účel, najviac 1 000 znakov.</mat-error
         ></mat-form-field
       >
-      <p class="muted">
-        Formulár je predbežný. Rozsah a význam prístupu určí potvrdený
-        backendový kontrakt.
-      </p>
       <button
         mat-flat-button
         type="submit"
         [disabled]="vm.busy || !!vm.createdId"
       >
-        Vytvoriť demo žiadosť
+        Vytvoriť žiadosť
       </button>
     </form>
     <aside>
@@ -50,7 +46,7 @@
       <sl-state
         *ngIf="!vm.items?.length"
         title="Zatiaľ žiadne žiadosti"
-        message="Vaše demo žiadosti sa zobrazia tu."
+        message="Vaše podané žiadosti sa zobrazia tu."
       ></sl-state
       ><mat-card
         appearance="outlined"

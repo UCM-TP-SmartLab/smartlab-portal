@@ -8,6 +8,8 @@ import { AppRoutingModule } from "./app-routing.module";
 import { CoreModule } from "./core/core.module";
 import { SharedModule } from "./shared/shared.module";
 import { sessionReducer } from "./store/session/session.store";
+import { SessionEffects } from "./store/session/session.effects";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -16,7 +18,8 @@ import { sessionReducer } from "./store/session/session.store";
     CoreModule,
     SharedModule,
     StoreModule.forRoot({ session: sessionReducer }),
-    EffectsModule.forRoot([]),
+    EffectsModule.forRoot([SessionEffects]),
+    NotificationsModule,
     AppRoutingModule,
   ],
   bootstrap: [AppComponent],

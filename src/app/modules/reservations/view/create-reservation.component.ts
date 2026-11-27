@@ -39,7 +39,7 @@ export class CreateReservationComponent {
   constructor() {
     inject(SeoService).update({
       title: "Nová rezervácia",
-      description: "Vytvorenie demo rezervácie.",
+      description: "Vytvorenie rezervácie.",
       path: "/rezervacie/nova",
       private: true,
     });

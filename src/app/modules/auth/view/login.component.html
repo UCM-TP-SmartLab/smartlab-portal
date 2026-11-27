@@ -15,17 +15,47 @@
   <sl-state
     *ngIf="denied"
     title="Nemáte oprávnenie"
-    message="Vaša aktuálna demo rola nemá prístup do tejto časti."
+    message="Vaša aktuálna rola nemá prístup do tejto časti."
     [error]="true"
-  ></sl-state
-  ><sl-state
-    *ngIf="!config.demo"
-    title="Prihlásenie zatiaľ nie je dostupné"
-    message="Táto statická verzia nie je pripojená k prihlasovaciemu systému. Rezervácie a žiadosti sa neodosielajú."
-    ><a mat-stroked-button routerLink="/priestory-a-vybavenie"
-      >Prezrieť verejný katalóg ↗</a
-    ></sl-state
-  ><mat-card *ngIf="config.demo" appearance="outlined"
+  ></sl-state>
+  <ng-container *ngIf="!config.demo && (session$ | async) as session">
+    <form
+      *ngIf="session.ready; else checkingSession"
+      [formGroup]="form"
+      (ngSubmit)="signIn()"
+    >
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input
+          matInput
+          type="email"
+          autocomplete="username"
+          formControlName="email"
+        />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Heslo</mat-label>
+        <input
+          matInput
+          type="password"
+          autocomplete="current-password"
+          formControlName="password"
+        />
+      </mat-form-field>
+      <p *ngIf="session.error" role="alert">{{ session.error }}</p>
+      <button
+        mat-flat-button
+        type="submit"
+        [disabled]="form.invalid || session.pending"
+      >
+        Prihlásiť sa
+      </button>
+    </form>
+    <ng-template #checkingSession
+      ><p>Prihlásenie sa načíta po spustení aplikácie.</p></ng-template
+    >
+  </ng-container>
+  <mat-card *ngIf="config.demo" appearance="outlined"
     ><mat-card-content
       ><span class="badge">LOKÁLNE DEMO</span>
       <h2>Vyskúšajte si používateľskú rolu</h2>

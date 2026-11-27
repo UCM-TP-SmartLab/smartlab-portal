@@ -1,9 +1,9 @@
 # SmartLab UCM & Trnava
 
-Staticky generovaný Angular portál s dizajnom Eukalyptus. Produkčný web
-nepotrebuje aplikačný server: doručuje iba HTML, JavaScript, CSS, fonty a obrázky.
-Za behu nevolá API ani externé služby. Verejné stránky obsahujú HTML aj bez
-JavaScriptu; filtre, navigácia aplikácie a demo formuláre používajú JavaScript.
+Staticky generovaný Angular portál s dizajnom Eukalyptus a PHP backendom.
+Verejné stránky obsahujú HTML aj bez JavaScriptu. Prehliadač načítava
+produkčné dáta z PHP API nad MySQL. Pri prerenderovaní sa API nevolá.
+Konfiguráciu databázy a prvého účtu opisuje [backend/README.md](backend/README.md).
 
 ## Spustenie
 
@@ -15,6 +15,12 @@ npm start
 ```
 
 Verejný statický režim počas vývoja: `http://localhost:4200`.
+
+Pre plnú prevádzku najprv pripravte MySQL podľa pokynov pre backend.
+Potom spustite v druhom termináli `npm run start:backend`. Vývojové proxy je
+v `proxy.conf.json`.
+Na produkcii treba popri statických súboroch nasadiť aj PHP backend a smerovať
+`/api` do `backend/public/index.php`; statický preview PHP neposkytuje.
 
 ```sh
 npm run start:demo
@@ -42,10 +48,11 @@ pomôcka; na hostingu ho netreba spúšťať.
 
 Hosting musí doručovať `/domov` aj `/domov/` zo súboru `/domov/index.html`.
 Rovnako postupuje pre ostatné vygenerované cesty. `/` je statický vstup.
-Neexistujúca cesta má dostať HTTP 404 a obsah `404.html`; JavaScript potom
-zobrazí aj konkrétny stav chýbajúceho záznamu. Pre priame vstupy na chránené
-produkčné cesty možno použiť `index.csr.html` ako statický fallback, ktorý
-presmeruje na obrazovku nedostupného prihlásenia. Nevytvárajte runtime SSR.
+Pre chránené cesty a detaily získavané z API použite `index.csr.html`, ak pre
+danú cestu neexistuje prerenderovaný súbor. Rozsah fallbacku je rovnaký ako
+v `scripts/serve-static.mjs`. PHP overí reláciu a Angular zobrazí
+prihlásenie alebo chýbajúci záznam podľa odpovede. Neznáme cesty mimo týchto
+skupín majú dostať HTTP 404 a obsah `404.html`.
 Aktuálna konfigurácia predpokladá hosting v koreni domény (`base href="/"`).
 
 Skutočnú doménu nastavte do `site.config.json`, napr. ako čistý HTTPS pôvod
@@ -55,8 +62,9 @@ prerenderovaných verejných ciest; súkromné cesty a 404 sú vylúčené.
 
 ## Obsah a architektúra
 
-- Schválený verejný obsah: `src/app/data/public-content.ts`. Nové záznamy
-  sa publikujú novým buildom, detaily sa automaticky prerenderujú.
+- Verejný obsah v prehliadači sa načítava z MySQL. Schválené záznamy v
+  `src/app/data/public-content.ts` slúžia na prerenderovanie a ako lokálna
+  záloha pri nedostupnosti API.
 - Demo fixtures: `src/app/core/data/demo-fixtures.ts`. Nie sú importované
   produkčným providerom. Demo nemožno zapnúť URL parametrom ani localStorage.
 - NgModule features: `src/app/modules`. Verejný obsah má vlastné feature state;
@@ -69,25 +77,18 @@ prerenderovaných verejných ciest; súkromné cesty a 404 sú vylúčené.
 
 Bez dodaných schválených obsahových záznamov sú produkčné zoznamy prázdne.
 Fotografie, kapacity, e-mail, telefón ani prevádzkové hodiny sa nevymýšľajú.
-Pôvodné verejné API sa podľa požiadavky na statický web nevolá.
 
-## Hotové obrazovky a hranice
+## Funkcie
 
 Domov, O SmartLabe, kontakt, aktuality/projekty/podujatia/partneri/študentské
 príležitosti so zoznamom a detailom; katalóg a detail zdroja; samostatná
 obsadenosť; verejný kalendár podujatí; študentské a správcovské prihlásenie;
-demo rezervácia, vlastné rezervácie a história, zrušenie, žiadosti o prístup,
-správcovská fronta a rozhodnutie; administrátorské prehľady zdrojov a rolí.
+rezervácie a ich história, žiadosti o prístup, správcovská fronta a rozhodnutia,
+administrácia zdrojov a rolí, odber obsadenosti cez ICS a interné oznámenia.
 
-Produkčné rezervácie, živá dostupnosť, autentifikácia, správa zdrojov/rolí,
-ICS a notifikácie sú **nedostupné**, kým neexistujú schválené integrácie a
-nie je zmenená požiadavka na nulové API požiadavky. Demo sa nesmie nasadiť
-ako skutočný rezervačný systém. Server musí pri budúcej integrácii vynucovať
-oprávnenia, kolízie a business pravidlá; frontendové guardy ich nenahrádzajú.
-
-Otvorené zmluvy sú v [backend-contract-todo.md](docs/backend-contract-todo.md),
-postup v [implementation-plan.md](docs/implementation-plan.md) a výsledky
-v [verification.md](docs/verification.md).
+PHP overuje roly, vlastníctvo, časové pravidlá a kolízie rezervácií. Schválenie
+žiadosti zaznamená rozhodnutie správcu. Používateľskú rolu mení administrátor.
+Podrobnosti sú v [API kontrakte](docs/backend-api.md).
 
 ## Overenie
 
@@ -103,7 +104,9 @@ npm run test:e2e
 
 E2E automaticky spustí lokálny statický náhľad a samostatný demo dev server.
 Testy overujú rezerváciu, konflikt so zachovaním formulára, rozhodnutie,
-guardy, verejné HTML bez JS, mobilné menu, šírky 375/800/1440 px a nulové
-runtime fetch/XHR alebo externé assety v produkcii. Všetky časy sa zobrazujú
+guardy, verejné HTML bez JS, mobilné menu, šírky 375/800/1440 px a produkčné
+API volania so simulovanými odpoveďami. PHP integračná sada používa skutočný
+MySQL. Postup spustenia je v [backend/README.md](backend/README.md).
+Všetky časy sa zobrazujú
 v Europe/Bratislava. Neexistujúca a dvojznačná hodina pri zmene času je
 odmietnutá s vysvetlením namiesto tichej konverzie.

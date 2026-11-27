@@ -14,6 +14,7 @@ import {
   FrontendReservationDraft,
   FrontendResource,
 } from "../../../data/frontend.models";
+import { sessionLoaded } from "../../../store/session/session.store";
 export const loadWorkspace = createAction(
   "[Pracovný priestor] Načítať",
   props<{ scope: "mine" | "management" }>(),
@@ -103,6 +104,7 @@ const busy = (s: WorkspaceState) => ({
 });
 export const workspaceReducer = createReducer(
   initialWorkspace,
+  on(sessionLoaded, () => initialWorkspace),
   on(loadWorkspace, (s) => ({ ...s, loading: true, loadError: null })),
   on(workspaceLoaded, (s, data) => ({
     ...s,
@@ -121,20 +123,20 @@ export const workspaceReducer = createReducer(
     ...s,
     bookings: [...s.bookings.filter((b) => b.id !== booking.id), booking],
     busy: false,
-    notice: "Demo rezervácia bola vytvorená iba v tejto relácii.",
+    notice: "Rezervácia bola vytvorená.",
     createdId: booking.id,
   })),
   on(bookingCancelled, (s, { booking }) => ({
     ...s,
     bookings: s.bookings.map((b) => (b.id === booking.id ? booking : b)),
     busy: false,
-    notice: "Demo rezervácia bola zrušená.",
+    notice: "Rezervácia bola zrušená.",
   })),
   on(accessCreated, (s, { request }) => ({
     ...s,
     access: [...s.access.filter((a) => a.id !== request.id), request],
     busy: false,
-    notice: "Demo žiadosť bola vytvorená iba v tejto relácii.",
+    notice: "Žiadosť bola vytvorená.",
     createdId: request.id,
   })),
   on(decisionMade, (s, { kind, item }) => ({
@@ -150,7 +152,7 @@ export const workspaceReducer = createReducer(
         ? s.access.map((a) => (a.id === item.id ? item : a))
         : s.access,
     busy: false,
-    notice: "Demo rozhodnutie bolo uložené v tejto relácii.",
+    notice: "Rozhodnutie bolo uložené.",
   })),
   on(operationFailed, (s, { error }) => ({ ...s, error, busy: false })),
   on(clearOperation, (s) => ({

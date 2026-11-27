@@ -123,9 +123,8 @@
               Zdroj: {{ request.item.resourceId }} · Počet:
               {{ request.item.quantity }}
             </p>
-            <p class="notice">
-              Dostupnosť a kolízie v tejto verzii posudzuje iba lokálny demo
-              provider.
+            <p *ngIf="config.demo" class="notice">
+              Obsadenosť je simulovaná iba v tejto demo relácii.
             </p></ng-container
           >
           <p *ngIf="request.item.reason">Dôvod: {{ request.item.reason }}</p>
@@ -165,7 +164,11 @@
             title="Žiadosť sa nenašla"
             message="Nie je súčasťou aktuálnej relácie."
           ></sl-state></ng-template></ng-template></ng-container
-    ><ng-container *ngIf="vm.page === 'resources'"
+    ><sl-admin-panel
+      *ngIf="!config.demo && (vm.page === 'resources' || vm.page === 'roles')"
+      [page]="vm.page"
+    ></sl-admin-panel>
+    <ng-container *ngIf="config.demo && vm.page === 'resources'"
       ><p class="notice">
         Demo prehľad. Úpravy a mazanie zdrojov vyžadujú potvrdené API.
       </p>
@@ -182,7 +185,7 @@
           </p></mat-card-content
         ></mat-card
       ></ng-container
-    ><ng-container *ngIf="vm.page === 'roles'"
+    ><ng-container *ngIf="config.demo && vm.page === 'roles'"
       ><p class="notice">
         Pracovné UI roly. Priraďovanie rolí nie je dostupné bez schváleného API.
       </p>

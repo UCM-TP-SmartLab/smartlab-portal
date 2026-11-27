@@ -15,7 +15,7 @@ async function booking(page: Page, purpose: string) {
   await page.getByLabel("Koniec", { exact: true }).fill("13:00");
   await page.getByLabel("Účel rezervácie").fill(purpose);
   await page.getByRole("button", { name: "Skontrolovať rezerváciu" }).click();
-  await page.getByRole("button", { name: "Vytvoriť demo rezerváciu" }).click();
+  await page.getByRole("button", { name: "Vytvoriť rezerváciu" }).click();
 }
 test("vytvorenie, konflikt a správcovské rozhodnutie v jednej relácii", async ({
   page,
@@ -24,9 +24,7 @@ test("vytvorenie, konflikt a správcovské rozhodnutie v jednej relácii", async
   page.on("pageerror", (e) => errors.push(e.message));
   await student(page);
   await booking(page, "Prvý projekt");
-  await expect(
-    page.getByText("Demo rezervácia bola vytvorená iba v tejto relácii."),
-  ).toBeVisible();
+  await expect(page.getByText("Rezervácia bola vytvorená.")).toBeVisible();
   await page.getByRole("link", { name: "Moje rezervácie →" }).click();
   await booking(page, "Druhý projekt");
   await expect(
@@ -41,9 +39,7 @@ test("vytvorenie, konflikt a správcovské rozhodnutie v jednej relácii", async
   await page.getByRole("link", { name: "Prvý projekt" }).click();
   await page.getByRole("button", { name: "Potvrdiť rozhodnutie" }).click();
   await page.getByRole("button", { name: "Potvrdiť", exact: true }).click();
-  await expect(
-    page.getByText("Demo rozhodnutie bolo uložené v tejto relácii."),
-  ).toBeVisible();
+  await expect(page.getByText("Rozhodnutie bolo uložené.")).toBeVisible();
   expect(errors).toEqual([]);
 });
 test("študent neprejde do správy a obnovenie vymaže reláciu", async ({
@@ -67,10 +63,8 @@ test("žiadosti o prístup zachovajú účel a zobrazia stav", async ({ page }) 
     .getByRole("link", { name: "Žiadosti o prístup", exact: true })
     .click();
   await page.getByLabel("Účel prístupu").fill("Práca na prototypovaní");
-  await page.getByRole("button", { name: "Vytvoriť demo žiadosť" }).click();
-  await expect(
-    page.getByText("Demo žiadosť bola vytvorená iba v tejto relácii."),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Vytvoriť žiadosť" }).click();
+  await expect(page.getByText("Žiadosť bola vytvorená.")).toBeVisible();
   await expect(
     page.getByText("Čaká na schválenie", { exact: true }),
   ).toBeVisible();
@@ -105,7 +99,7 @@ test("rezervačný formulár sa zmestí na mobil a prázdny účel sa neodošle"
   await page.getByRole("button", { name: "Skontrolovať rezerváciu" }).click();
   await expect(page.getByText("Vyberte zdroj.", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Vytvoriť demo rezerváciu" }),
+    page.getByRole("button", { name: "Vytvoriť rezerváciu" }),
   ).toHaveCount(0);
   expect(
     await page.evaluate(

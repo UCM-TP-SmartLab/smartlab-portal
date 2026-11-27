@@ -1,0 +1,123 @@
+<ng-container
+  *ngIf="{
+    busy: busy$ | async,
+    error: error$ | async,
+    notice: notice$ | async,
+    saved: saved$ | async,
+  } as state"
+>
+  <p *ngIf="state.error" role="alert">{{ state.error }}</p>
+  <p *ngIf="state.notice" role="status">{{ state.notice }}</p>
+  <ng-container *ngIf="mode === 'resources'">
+    <h2>{{ editing ? "Upraviť zdroj " + editingName : "Pridať zdroj" }}</h2>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <mat-form-field appearance="outline">
+        <mat-label>Typ</mat-label>
+        <mat-select formControlName="type">
+          <mat-option value="room">Priestor</mat-option>
+          <mat-option value="equipment">Vybavenie</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Názov</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Popis</mat-label>
+        <textarea matInput formControlName="description"></textarea>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Umiestnenie</mat-label>
+        <input matInput formControlName="location" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Kapacita alebo počet kusov</mat-label>
+        <input matInput type="number" formControlName="amount" />
+      </mat-form-field>
+      <div class="actions">
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="state.busy || form.invalid"
+        >
+          Uložiť zdroj
+        </button>
+        <button *ngIf="editing" mat-button type="button" (click)="reset()">
+          Pridať ďalší zdroj
+        </button>
+      </div>
+    </form>
+    <mat-card
+      *ngFor="let resource of resources$ | async"
+      appearance="outlined"
+      class="list-card"
+    >
+      <mat-card-content>
+        <h3>{{ resource.name }}</h3>
+        <p>{{ resource.description }}</p>
+        <p *ngIf="resource.archivedAt">Archivovaný</p>
+        <div class="actions" *ngIf="!resource.archivedAt">
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="state.busy"
+            (click)="edit(resource)"
+          >
+            Upraviť
+          </button>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="state.busy"
+            (click)="archive(resource.id)"
+          >
+            Archivovať
+          </button>
+          <label [for]="'image-' + resource.id">Fotografia</label>
+          <input
+            [id]="'image-' + resource.id"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            [disabled]="state.busy"
+            (change)="upload(resource.id, $event)"
+          />
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+  <ng-container *ngIf="mode === 'roles'">
+    <ng-container *ngIf="roles$ | async as roles">
+      <mat-card
+        *ngFor="let user of users$ | async"
+        appearance="outlined"
+        class="list-card"
+      >
+        <mat-card-content>
+          <h3>{{ user.name }}</h3>
+          <p>{{ user.email }}</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Roly používateľa</mat-label>
+            <mat-select
+              #selection
+              multiple
+              [value]="user.roles"
+              [disabled]="state.busy"
+            >
+              <mat-option *ngFor="let role of roles" [value]="role">{{
+                labels[role]
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="state.busy"
+            (click)="setRoles(user.id, selection.value)"
+          >
+            Uložiť roly
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </ng-container>
+</ng-container>

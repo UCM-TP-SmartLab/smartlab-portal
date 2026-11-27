@@ -27,15 +27,18 @@ createServer((req, res) => {
       file = resolve(file, "index.html");
     const asset = !!extname(pathname);
     const exists = existsSync(file);
-    const protectedRoute =
-      /^\/(administracia|rezervacie|ziadosti-o-pristup)(\/|$)/.test(pathname);
+    const clientRoute =
+      /^\/(administracia|rezervacie|ziadosti-o-pristup)(\/|$)/.test(pathname) ||
+      /^\/(aktuality|projekty|podujatia|partneri|prilezitosti-pre-studentov|priestory-a-vybavenie)\/[^/]+\/?$/.test(
+        pathname,
+      );
     if (!exists)
       file = resolve(
         root,
-        !asset && protectedRoute ? "index.csr.html" : "404.html",
+        !asset && clientRoute ? "index.csr.html" : "404.html",
       );
     if (!existsSync(file)) file = resolve(root, "404.html");
-    res.writeHead(exists ? 200 : 404, {
+    res.writeHead(exists || (!asset && clientRoute) ? 200 : 404, {
       "Content-Type": mime[extname(file)] || "application/octet-stream",
       "Cache-Control": "no-store",
     });

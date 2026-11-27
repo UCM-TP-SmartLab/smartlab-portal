@@ -1,5 +1,5 @@
 import { InjectionToken } from "@angular/core";
-import { Observable } from "rxjs";
+import { Observable, map } from "rxjs";
 import {
   FrontendAccessDraft,
   FrontendAccessRequest,
@@ -17,6 +17,15 @@ export abstract class PortalProvider {
     kind: UiContentKind,
   ): Observable<readonly FrontendContentEntry[]>;
   abstract resources(): Observable<readonly FrontendResource[]>;
+  resource(id: string): Observable<FrontendResource> {
+    return this.resources().pipe(
+      map((resources) => {
+        const resource = resources.find((item) => item.id === id);
+        if (!resource) throw new FrontendOperationError("invalid");
+        return resource;
+      }),
+    );
+  }
   abstract availability(
     resourceId: string,
     date: string,

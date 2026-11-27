@@ -1,0 +1,38 @@
+<button
+  mat-button
+  type="button"
+  [attr.aria-expanded]="open"
+  aria-controls="portal-notifications"
+  (click)="toggle()"
+>
+  Oznámenia
+</button>
+<section id="portal-notifications" [hidden]="!open" aria-label="Oznámenia">
+  <ng-container
+    *ngIf="{
+      items: items$ | async,
+      busy: busy$ | async,
+      error: error$ | async,
+    } as view"
+  >
+    <p *ngIf="view.error" role="alert">{{ view.error }}</p>
+    <p *ngIf="view.busy" role="status">Načítavanie oznámení…</p>
+    <p *ngIf="!view.busy && !view.error && !view.items?.length">
+      Žiadne oznámenia.
+    </p>
+    <ul *ngIf="view.items?.length">
+      <li *ngFor="let item of view.items">
+        <p>{{ item.message }} · {{ item.createdAt | instant }}</p>
+        <button
+          *ngIf="!item.readAt"
+          mat-button
+          type="button"
+          [disabled]="view.busy"
+          (click)="read(item.id)"
+        >
+          Označiť ako prečítané
+        </button>
+      </li>
+    </ul>
+  </ng-container>
+</section>

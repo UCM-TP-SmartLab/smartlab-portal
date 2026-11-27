@@ -37,6 +37,7 @@ export interface FrontendResource {
   capacity?: number;
   quantity?: number;
   equipment?: string[];
+  imageUrl?: string;
 }
 export interface FrontendContentEntry {
   id: string;
