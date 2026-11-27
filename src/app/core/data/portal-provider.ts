@@ -63,9 +63,7 @@ export class FrontendOperationError extends Error {
       | "conflict"
       | "forbidden"
       | "invalid-response"
-      | "invalid"
-      | "not-implemented",
-    // TODO: Odstrániť tento pracovný kód až po dokončení testovacích PHP odpovedí.
+      | "invalid",
   ) {
     super(code);
   }

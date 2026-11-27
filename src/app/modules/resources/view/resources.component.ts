@@ -10,6 +10,7 @@ import {
   tap,
 } from "rxjs";
 import { PORTAL_CONFIG } from "../../../config/portal.config";
+import { API_BASE_URL } from "../../../config/api.config";
 import { SeoService } from "../../../core/seo/seo.service";
 import {
   loadResources,
@@ -31,6 +32,7 @@ import { STATUS_LABELS } from "../../../data/frontend.models";
 })
 export class ResourcesComponent {
   readonly config = inject(PORTAL_CONFIG);
+  readonly apiBase = inject(API_BASE_URL);
   private readonly store = inject(Store);
   private readonly route = inject(ActivatedRoute);
   private readonly seo = inject(SeoService);

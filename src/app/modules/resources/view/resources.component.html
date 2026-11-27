@@ -45,6 +45,7 @@
         <article *ngIf="vm.detail as resource; else missing">
           <div class="split-feature">
             <div
+              *ngIf="!resource.imageUrl; else resourceImage"
               class="resource-placeholder"
               role="img"
               aria-label="Fotografia zatiaľ nie je dostupná"
@@ -54,6 +55,13 @@
               }}</span>
               <p>Fotografia zatiaľ nie je dostupná</p>
             </div>
+            <ng-template #resourceImage>
+              <img
+                [src]="resource.imageUrl"
+                [alt]="resource.name"
+                class="resource-placeholder"
+              />
+            </ng-template>
             <div>
               <span *ngIf="config.demo" class="badge">DEMO</span>
               <h2>{{ resource.name }}</h2>
@@ -78,6 +86,12 @@
                   routerLink="/obsadenost"
                   [queryParams]="{ resource: resource.id }"
                   >Pozrieť obsadenosť</a
+                >
+                <a
+                  *ngIf="!config.demo && resource.type === 'room'"
+                  mat-stroked-button
+                  [href]="apiBase + '/spaces/' + resource.id + '/calendar.ics'"
+                  >Odber obsadenosti (ICS)</a
                 >
               </div>
             </div>

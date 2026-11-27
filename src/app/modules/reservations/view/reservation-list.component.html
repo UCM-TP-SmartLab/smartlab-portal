@@ -99,7 +99,7 @@
       ><sl-state
         *ngIf="!vm.loading && !vm.bookings?.length"
         title="Zatiaľ žiadne rezervácie"
-        message="Vytvorte demo rezerváciu alebo zmeňte filtre."
+        message="Vytvorte rezerváciu alebo zmeňte filtre."
       ></sl-state></ng-container
     ><ng-template #detail
       ><a class="back-link" routerLink="/rezervacie">← Moje rezervácie</a>
@@ -130,7 +130,7 @@
       <ng-template #missing
         ><sl-state
           title="Rezervácia sa nenašla"
-          message="Nie je súčasťou vašej aktuálnej demo relácie."
+          message="Rezervácia nie je vo vašom prehľade."
         ></sl-state></ng-template
     ></ng-template></section
 ></ng-container>

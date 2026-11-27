@@ -20,22 +20,31 @@ test("produkcia volá iba existujúce API a nedá sa prepnúť na demo", async (
   const forbidden: string[] = [];
   const errors: string[] = [];
   const apiCalls: string[] = [];
-  await page.route("**/api/spaces", (route) =>
+  const catalogPaths = ["/api/spaces", "/api/equipment"];
+  const activePaths = [...catalogPaths, "/api/auth/me"];
+  await page.route(/\/api\/public\//, (route) =>
+    route.fulfill({ json: { data: [], nextPage: null } }),
+  );
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({ json: { data: { session: null, csrfToken: null } } }),
+  );
+  await page.route(/\/api\/(spaces|equipment)$/, (route) =>
     route.fulfill({
-      json: { data: { message: "Zoznam priestorov SmartLab" } },
+      json: { data: [] },
     }),
   );
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("request", (r) => {
     if (
       (["fetch", "xhr"].includes(r.resourceType()) &&
-        new URL(r.url()).pathname !== "/api/spaces") ||
+        !activePaths.includes(new URL(r.url()).pathname) &&
+        !new URL(r.url()).pathname.startsWith("/api/public/")) ||
       new URL(r.url()).origin !== origin
     )
       forbidden.push(r.url());
   });
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname === "/api/spaces")
+    if (catalogPaths.includes(new URL(request.url()).pathname))
       apiCalls.push(request.url());
   });
   await page.addInitScript(() => {
@@ -58,7 +67,7 @@ test("produkcia volá iba existujúce API a nedá sa prepnúť na demo", async (
     await expect(page.locator("h1")).toBeVisible();
   }
   await expect(
-    page.getByText("Prihlásenie zatiaľ nie je dostupné"),
+    page.getByRole("button", { name: "Prihlásiť sa" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Pokračovať ako/ }),
@@ -67,23 +76,63 @@ test("produkcia volá iba existujúce API a nedá sa prepnúť na demo", async (
   expect(apiCalls.length).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
-test("detail priestoru volá PHP trasu a nezobrazuje testovaciu správu ako dáta", async ({
-  page,
-}) => {
+test("detail priestoru zobrazuje záznam z PHP trasy", async ({ page }) => {
   let called = false;
   await page.route("**/api/spaces/1", (route) => {
     called = true;
     return route.fulfill({
-      json: { data: { id: "1", message: "Detail priestoru SmartLab" } },
+      json: {
+        data: {
+          id: "1",
+          name: "Testovací ateliér",
+          description: "Priestor",
+          type: "room",
+          capacity: 10,
+        },
+      },
     });
   });
   await page.goto(`${origin}/priestory-a-vybavenie/1`);
   await expect(
-    page.getByText("Backend zatiaľ vracia iba testovaciu odpoveď.", {
-      exact: false,
-    }),
+    page.getByRole("heading", { name: "Testovací ateliér", level: 1 }),
   ).toBeVisible();
   expect(called).toBe(true);
+});
+test("priamy vstup čaká na obnovenie relácie a odhlásenie pošle CSRF token", async ({
+  page,
+}) => {
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/auth/me") {
+      await route.fulfill({
+        json: {
+          data: {
+            session: { id: "42", name: "Test", role: "student" },
+            csrfToken: "test-token",
+          },
+        },
+      });
+      return;
+    }
+    if (path === "/api/auth/logout") {
+      expect(route.request().headers()["x-csrf-token"]).toBe("test-token");
+      await route.fulfill({
+        json: { data: { session: null, csrfToken: null } },
+      });
+      return;
+    }
+    await route.fulfill({ json: { data: [] } });
+  });
+  const response = await page.goto(`${origin}/rezervacie`);
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { name: "Moje rezervácie" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Odhlásiť sa" }).click();
+  await expect(page).toHaveURL(`${origin}/domov`);
+  await expect(page.getByRole("button", { name: "Odhlásiť sa" })).toHaveCount(
+    0,
+  );
 });
 test("neznámy detail zobrazuje pravdivý stav", async ({ page }) => {
   await page.goto(`${origin}/projekty/neexistuje`);

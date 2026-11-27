@@ -6,8 +6,44 @@
 <div class="topline">
   <span>Miesto, kde nápady dostávajú priestor.</span>
   <div>
-    <a routerLink="/prihlasenie">Prihlásenie študenta ↗</a
-    ><a routerLink="/administracia/prihlasenie">Administrácia</a>
+    <ng-container *ngIf="{ session: session$ | async } as view">
+      <a
+        [routerLink]="
+          !config.demo && view.session?.role === student
+            ? '/rezervacie'
+            : '/prihlasenie'
+        "
+        >{{
+          !config.demo && view.session?.role === student
+            ? "Moje rezervácie"
+            : "Prihlásenie študenta ↗"
+        }}</a
+      >
+      <a
+        [routerLink]="
+          !config.demo && view.session?.id && view.session?.role !== student
+            ? '/administracia'
+            : '/administracia/prihlasenie'
+        "
+        >Administrácia</a
+      >
+    </ng-container>
+    <ng-container *ngIf="!config.demo">
+      <ng-container *ngIf="session$ | async as session">
+        <ng-container *ngIf="session.id">
+          <sl-notifications></sl-notifications>
+          <button
+            mat-button
+            type="button"
+            [disabled]="session.pending"
+            (click)="signOut()"
+          >
+            Odhlásiť sa
+          </button>
+          <span *ngIf="session.error" role="alert">{{ session.error }}</span>
+        </ng-container>
+      </ng-container>
+    </ng-container>
   </div>
 </div>
 <header class="site-header">

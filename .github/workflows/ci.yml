@@ -142,8 +142,9 @@ jobs:
             fi
           }
 
-          check GET /api/spaces 200
-          check GET /api/spaces/1 200
+          check GET /api/spaces 503
+          check GET /api/spaces/invalid 400
+          check GET /api/equipment 503
           check GET /api/neexistuje 404
           check DELETE /api/spaces 405
 
@@ -155,11 +156,13 @@ jobs:
     name: Databáza (import schémy)
     runs-on: ubuntu-24.04
     services:
-      # Rovnaká verzia ako v XAMPP.
-      mariadb:
-        image: mariadb:10.4
+      mysql:
+        image: mysql:8.4
         env:
-          MARIADB_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smartlab_test
+          MYSQL_USER: smartlab_test
+          MYSQL_PASSWORD: smartlab_test
         ports:
           - 3306:3306
         options: >-
@@ -170,13 +173,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+
       - name: Import database/schema.sql
+        env:
+          DB_HOST: 127.0.0.1
+          DB_NAME: smartlab_test
+          DB_USER: smartlab_test
+          DB_PASSWORD: smartlab_test
         run: |
-          if [ ! -f database/schema.sql ]; then
-            echo "::notice::Súbor database/schema.sql zatiaľ neexistuje, kontrola sa preskočila."
-            exit 0
-          fi
-          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE smartlab CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
-          mysql -h 127.0.0.1 -u root -proot smartlab < database/schema.sql
-          echo "Vytvorené tabuľky:"
-          mysql -h 127.0.0.1 -u root -proot smartlab -e "SHOW TABLES"
+          MYSQL_PWD="$DB_PASSWORD" mysql -h "$DB_HOST" -u "$DB_USER" "$DB_NAME" < database/schema.sql
+          php backend/tests/integration.php

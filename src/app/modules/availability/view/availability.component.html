@@ -87,8 +87,8 @@
       </div>
       <sl-state
         *ngIf="!vm.intervals?.length"
-        title="Žiadne demo rezervácie v tomto dni"
-        message="V aktuálnej lokálnej relácii nie sú pre tento zdroj blokované intervaly."
+        title="Žiadne rezervácie v tomto dni"
+        message="Pre tento zdroj nie sú evidované blokované intervaly."
       ></sl-state
       ><a
         mat-flat-button
@@ -98,7 +98,7 @@
       ></ng-container
     >
     <p class="muted">
-      ICS odber zatiaľ nie je dostupný. Verejné podujatia nájdete v
+      Verejné podujatia nájdete v
       <a routerLink="/podujatia">kalendári podujatí</a>.
     </p>
   </section></ng-container

@@ -1,58 +1,48 @@
-# PHP API – stav integrácie
+# SmartLab PHP API
 
-Spustenie (PHP musí byť v PATH):
+Použite PHP 8.3 alebo novší s rozšírením pdo_mysql a MySQL 8.4. Vytvorte
+prázdnu databázu a importujte [schému MySQL](../database/schema.sql).
+Prevádzkové údaje a účty vložte podľa schválených podkladov. Pri importe zo
+staršieho Oracle modelu treba namapovať údaje do novej schémy.
 
-```sh
-npm run start:backend
-```
+## Konfigurácia
 
-V druhom termináli `npm start`. Angular `/api` proxy smeruje na
-`http://127.0.0.1:8000`; adresu vývoja mení `proxy.conf.json`.
-Produkčný web musí smerovať `/api` na `backend/public/index.php` a ostatné
-cesty na statické Angular súbory. Lokálny `npm run preview` API nehostuje.
+| Premenná | Význam |
+| --- | --- |
+| DB_HOST | Hostiteľ MySQL |
+| DB_PORT | Port MySQL, predvolene 3306 |
+| DB_NAME | Názov databázy |
+| DB_USER, DB_PASSWORD | Účet aplikácie s oprávneniami na čítanie a zápis v jej databáze |
+| APP_ORIGIN | Pôvod webu, vo vývoji predvolene http://localhost:4200 |
+| SESSION_SECURE | V produkcii za HTTPS proxy nastavte hodnotu 1 |
+| RESOURCE_IMAGE_DIRECTORY | Zapisovateľný priečinok pre obrázky mimo verejného koreňa |
 
-## Existujúce trasy
+PHP číta premenné z prostredia procesu. Pre fotky povoľte nahrávanie súborov
+a nastavte upload_max_filesize aspoň na 5 MB a post_max_size nad tento limit.
+Prihlásenie počíta pokusy podľa e-mailu a IP v 15-minútovom okne.
 
-- `GET /api/spaces`
-- `GET /api/spaces/{id}`
+## Účty a spustenie
 
-Frontend volá obe cez `SpacesApi`, cez NgRx effects. Backend zatiaľ vracia
-iba `{data: {message, id?}}`. Adaptér tento tvar rozpozná a zobrazí vysvetlenie,
-nie vymyslený alebo prázdny úspešný katalóg. Po implementácii reálnych dát
-treba dohodnúť typy a dokončiť `SpacesApi.decode` označené `// TODO`.
-Budúca ľubovoľná odpoveď sa zámerne neprijíma bez kontroly schémy.
+Prvý administrátorský účet vytvorí príkaz nižšie. Heslo načíta zo štandardného
+vstupu a uloží jeho hash. Použite 12 až 72 bajtov.
 
-## Kostry
+    php backend/bin/create-admin.php admin@example.com Meno Priezvisko
+    npm run start:backend
 
-`app/routes-todo.php` obsahuje všetky chýbajúce navrhované trasy s `// TODO`.
-Vracajú HTTP **501**, JSON `error.code = NOT_IMPLEMENTED` a nič neukladajú.
-Pri implementácii treba danú registráciu nahradiť, nie vytvoriť duplicitnú
-trasu za ňou. Presné payloady a enumy ešte nie sú potvrdené.
+Pre ďalšie účty pridajte osobu a aktívny účet do tabuliek people a accounts.
+Použite hash vytvorený PHP cez password_hash. Rolu nastavte cez administráciu
+alebo pri založení účtu cez account_roles.
 
-Chýba: autentifikácia a roly, verejný obsah, reálne priestory, vybavenie,
-obsadenosť, rezervácie/vlastníctvo/kolízie, prístupové žiadosti, správcovské
-rozhodnutia, admin CRUD zdrojov, upload, používatelia/roly, ICS a notifikácie.
-Auth z oddelenej feature vetvy sa tu automaticky nezlučuje.
+V druhom termináli spustite npm start. Angular proxy odovzdáva požiadavky na
+/api backendu na 127.0.0.1:8000. V produkcii doručujte Angular a API na
+rovnakom HTTPS pôvode a smerujte /api do backend/public/index.php.
+Formát požiadaviek a odpovedí opisuje [API kontrakt](../docs/backend-api.md).
 
-Frontendové kostry existujúcich metód sú v `ProductionPortalProvider`;
-chýbajúce operácie zostávajú explicitne nedostupné a nevolajú fiktívny úspech.
-Verejný obsah zatiaľ zostáva lokálny. Demo režim zostáva izolovaný.
+## Overenie
 
-Statický build nevykonáva API požiadavky počas prerenderu. Katalóg ich robí
-až v prehliadači. Pôvodné tvrdenie o nulových runtime API požiadavkách už
-pre aktuálnu integráciu neplatí.
+Na čistom MySQL vytvorte vyhradenú databázu s príponou _test, importujte
+schému a nasmerujte na ňu premenné DB_*. Rozšírenie pdo_mysql povoľte
+v konfigurácii PHP aj pre podprocesy. Test vytvorí a odstráni vlastné záznamy.
 
-## Overenie integrácie
-
-Lint, statický produkčný build a kontrola HTML prešli. Prešlo 32 unit testov
-a 14 prehliadačových testov vrátane volania zoznamu/detailu a spracovania
-testovacích odpovedí. Automatická E2E sada používa simulované odpovede.
-
-Po inštalácii PHP 8.6.0 s načítaným `php.ini` bolo 24. 11. 2026 doplnené
-živé overenie: všetkých 6 PHP súborov prešlo `php -l`, prešlo 45 HTTP kontrol
-(2 existujúce trasy, 39 TODO trás s HTTP 501, neznáma trasa 404, nesprávna
-metóda 405 a 2 CORS preflight scenáre). V Chromium bolo overené aj skutočné
-Angular → dev proxy → PHP volanie zoznamu a detailu priestoru: HTTP 200,
-rozpoznaná testovacia odpoveď, vysvetľujúci stav UI a žiadne JavaScript chyby.
-Pri tejto kontrole sa použil absolútny WinGet interpreter, PHP port 18080
-a Angular port 14200; po kontrole boli oba pomocné servery ukončené.
+    php backend/tests/AuthTest.php
+    php backend/tests/integration.php

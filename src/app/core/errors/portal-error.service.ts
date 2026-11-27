@@ -6,8 +6,6 @@ export class PortalErrorService {
   message(error: unknown): string {
     if (error instanceof FrontendOperationError) {
       const messages = {
-        "not-implemented":
-          "Backend zatiaľ vracia iba testovaciu odpoveď. Skutočné údaje ešte nie sú implementované.",
         unavailable:
           "Táto funkcia zatiaľ nie je dostupná. Vyžaduje pripojenie schváleného backendu.",
         conflict:
@@ -26,6 +24,15 @@ export class PortalErrorService {
         return "Táto operácia ešte nie je implementovaná na backende.";
       if (error.status === 401) return "Pre túto operáciu sa musíte prihlásiť.";
       if (error.status === 403) return "Na túto operáciu nemáte oprávnenie.";
+      if (
+        error.status === 409 &&
+        error.error?.error?.code === "RESERVATION_CONFLICT"
+      )
+        return this.message(new FrontendOperationError("conflict"));
+      if (error.status === 409)
+        return "Stav záznamu sa zmenil. Obnovte prehľad a skúste to znova.";
+      if (error.status === 400)
+        return "Skontrolujte zadané údaje a skúste to znova.";
       if (error.status === 404)
         return "Požadovaný záznam alebo API trasa sa nenašli.";
       if (error.status >= 500)

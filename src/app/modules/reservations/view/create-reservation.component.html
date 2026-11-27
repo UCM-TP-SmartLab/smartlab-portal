@@ -69,7 +69,7 @@
           rows="4"
           maxlength="1000"
         ></textarea
-        ><mat-hint>Demo pole; skutočný rozsah určí backend.</mat-hint
+        ><mat-hint>Zadajte počet potrebných kusov.</mat-hint
         ><mat-error
           >Zadajte účel, najviac 1 000 znakov.</mat-error
         ></mat-form-field
@@ -92,7 +92,7 @@
         class="text-link"
         routerLink="/obsadenost"
         [queryParams]="{ resource: vm.changes?.value?.resourceId }"
-        >Pozrieť demo obsadenosť →</a
+        >Pozrieť obsadenosť →</a
       >
       <div *ngIf="summary as draft" class="summary-card">
         <h2>Zhrnutie požiadavky</h2>
@@ -105,7 +105,7 @@
           (click)="submit()"
           [disabled]="vm.busy || !!vm.createdId"
         >
-          {{ vm.busy ? "Spracúva sa…" : "Vytvoriť demo rezerváciu" }}
+          {{ vm.busy ? "Spracúva sa…" : "Vytvoriť rezerváciu" }}
         </button>
       </div>
     </aside>

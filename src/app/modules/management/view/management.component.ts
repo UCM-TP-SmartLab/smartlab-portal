@@ -6,6 +6,7 @@ import { ErrorStateMatcher } from "@angular/material/core";
 import { FormControl } from "@angular/forms";
 import { BehaviorSubject, combineLatest, filter, map, of, tap } from "rxjs";
 import { SeoService } from "../../../core/seo/seo.service";
+import { PORTAL_CONFIG } from "../../../config/portal.config";
 import {
   FrontendDecision,
   FrontendQueueItem,
@@ -33,6 +34,7 @@ class ReasonErrorMatcher implements ErrorStateMatcher {
   templateUrl: "./management.component.html",
 })
 export class ManagementComponent {
+  readonly config = inject(PORTAL_CONFIG);
   private readonly store = inject(Store);
   private readonly route = inject(ActivatedRoute);
   private readonly dialog = inject(MatDialog);
@@ -118,12 +120,13 @@ export class ManagementComponent {
   constructor() {
     inject(SeoService).update({
       title: "Administrácia",
-      description: "Lokálna demo správa rezervácií a prístupových žiadostí.",
+      description: "Správa rezervácií a prístupových žiadostí.",
       path: "/administracia",
       private: true,
     });
     this.store.dispatch(W.clearOperation());
-    this.store.dispatch(W.loadWorkspace({ scope: "management" }));
+    if (this.config.demo || this.route.snapshot.data["page"] === "queue")
+      this.store.dispatch(W.loadWorkspace({ scope: "management" }));
   }
   setFilter(key: "status" | "resource" | "date", value: string): void {
     this.filters$.next({ ...this.filters$.value, [key]: value });
@@ -139,8 +142,12 @@ export class ManagementComponent {
     this.decision$ = this.dialog
       .open(ConfirmDialogComponent, {
         data: {
-          title: "Potvrdiť demo rozhodnutie?",
-          message: "Rozhodnutie sa uloží iba v tejto lokálnej relácii.",
+          title: this.config.demo
+            ? "Potvrdiť demo rozhodnutie?"
+            : "Potvrdiť rozhodnutie?",
+          message: this.config.demo
+            ? "Rozhodnutie sa uloží iba v tejto lokálnej relácii."
+            : "Používateľ dostane oznámenie o výsledku.",
         },
       })
       .afterClosed()

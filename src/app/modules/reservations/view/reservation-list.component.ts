@@ -57,7 +57,7 @@ export class ReservationListComponent {
   constructor() {
     inject(SeoService).update({
       title: "Moje rezervácie",
-      description: "Prehľad vlastných demo rezervácií.",
+      description: "Prehľad vlastných rezervácií.",
       path: "/rezervacie",
       private: true,
     });
@@ -71,8 +71,8 @@ export class ReservationListComponent {
     this.cancel$ = this.dialog
       .open(ConfirmDialogComponent, {
         data: {
-          title: "Zrušiť demo rezerváciu?",
-          message: "Táto zmena sa týka iba lokálnej demo relácie.",
+          title: "Zrušiť rezerváciu?",
+          message: "Zrušením uvoľníte rezervovaný čas.",
         },
       })
       .afterClosed()
