@@ -100,6 +100,7 @@ npm run lint
 npm test -- --watch=false
 npm run build
 npm run check:static
+npm run validate:html  # W3C validácia HTML a CSS po builde, potrebuje Javu
 npx playwright install chromium
 npm run test:e2e
 ```
